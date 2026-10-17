@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ui="using:ControlStyles" xmlns:vm="using:Soci.ViewModels" xmlns:map="using:Soci.ViewModels.Map"
+ xmlns:views="using:Soci.Views" x:Class="Soci.Views.SociView" x:DataType="vm:SociViewModel"
+ Background="LightSteelBlue" KeyboardNavigation.TabNavigation="Cycle">
+ <UserControl.DataTemplates>
+  <DataTemplate DataType="{x:Type vm:SociInputBase}" x:DataType="vm:SociInputBase"><views:PersonInputView/></DataTemplate>
+ </UserControl.DataTemplates>
+ <Grid Margin="24">
+  <ui:PopupBorder x:Name="Popup" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+     MaxWidth="1400" Padding="20" IsVisible="{Binding !IsBusy}">
+   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="14">
+     <Grid ColumnDefinitions="*,Auto">
+      <ui:UiTitolo Text="Leonardo18 - GESTIONE SOCI" SubTitolo="True" FontSize="22" VerticalAlignment="Center"/>
+      <ui:UiButton Grid.Column="1" Content="TORNA AL MENU" Command="{Binding MenuCommand}" Padding="12,8"/>
+     </Grid>
+     <Grid x:Name="MainColumns" ColumnDefinitions="3*,2*" ColumnSpacing="18" RowSpacing="18">
+      <StackPanel Spacing="10" IsVisible="{Binding IsGroupVisible}">
+       <WrapPanel Orientation="Horizontal" IsEnabled="{Binding GroupEnabled}">
+        <ui:UiButton Content="NUOVO SOCIO" Command="{Binding AddCommand}" Padding="10,7" Margin="0,0,8,6"/>
+        <ui:UiButton Content="MODIFICA" Command="{Binding UpdCommand}" Padding="10,7" Margin="0,0,8,6"/>
+        <ui:UiButton Content="ELIMINA" Command="{Binding DelCommand}" Padding="10,7" Margin="0,0,8,6"/>
+        <ui:UiButton Content="CERCA" Command="{Binding PersonSearchCommand}" Padding="10,7" Margin="0,0,8,6"/>
+       </WrapPanel>
+       <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+        <TextBlock Text="ORDINA PER" Foreground="White" VerticalAlignment="Center"/>
+        <ui:UiComboBox Grid.Column="1" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SortBy, Mode=TwoWay}" IsEnabled="{Binding GroupEnabled}"/>
+        <ui:UiButton Grid.Column="2" Content="TUTTI / AGGIORNA" Command="{Binding FilterCommand}" Padding="8,5"/>
+       </Grid>
+       <Border Background="#F4F7FA" CornerRadius="8" Padding="6">
+        <Grid RowDefinitions="Auto,*">
+         <Grid ColumnDefinitions="*,110,110" Margin="30,6,8,6">
+          <TextBlock Text="ANAGRAFICA / CODICE SOCIO" FontWeight="Bold" FontSize="12"/>
+          <TextBlock Grid.Column="1" Text="TESSERA" FontWeight="Bold" FontSize="12"/>
+          <TextBlock Grid.Column="2" Text="SCADENZA" FontWeight="Bold" FontSize="12"/>
+         </Grid>
+         <TreeView x:Name="SociList" Grid.Row="1" ItemsSource="{Binding GroupedDataSource}"
+           SelectedItem="{Binding GroupSelectedNode, Mode=TwoWay}" IsEnabled="{Binding GroupEnabled}"
+           Height="300" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+          <TreeView.Styles>
+           <Style Selector="TreeViewItem" x:DataType="map:SociTreeNode">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+           </Style>
+          </TreeView.Styles>
+          <TreeView.ItemTemplate>
+           <TreeDataTemplate x:DataType="map:SociTreeNode" ItemsSource="{Binding Children}">
+            <Grid ColumnDefinitions="*,110,110" MinWidth="420" Margin="0,4">
+             <TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis"/>
+             <TextBlock Grid.Column="1" Text="{Binding NumeroTessera}" FontSize="13"/>
+             <TextBlock Grid.Column="2" Text="{Binding Scadenza}" FontSize="13"/>
+            </Grid>
+           </TreeDataTemplate>
+          </TreeView.ItemTemplate>
+         </TreeView>
+        </Grid>
+       </Border>
+       <TextBlock Text="{Binding ResultText}" Foreground="White" FontSize="13" TextWrapping="Wrap"/>
+       <TextBlock Text="CODICI SOCIO" Foreground="White" FontWeight="Bold"/>
+       <WrapPanel IsEnabled="{Binding GroupEnabled}">
+        <ui:UiButton Content="AGGIUNGI CODICE" Command="{Binding AddCodiceSocioCommand}" Padding="10,7" Margin="0,0,8,6"/>
+        <ui:UiButton Content="MODIFICA CODICE" Command="{Binding UpdCodiceSocioCommand}" Padding="10,7" Margin="0,0,8,6"/>
+        <ui:UiButton Content="ELIMINA CODICE" Command="{Binding DelCodiceSocioCommand}" Padding="10,7" Margin="0,0,8,6"/>
+       </WrapPanel>
+       <TextBlock Text="TESSERE" Foreground="White" FontWeight="Bold"/>
+       <WrapPanel IsEnabled="{Binding GroupEnabled}">
+        <ui:UiButton Content="AGGIUNGI TESSERA" Command="{Binding AddTesseraCommand}" Padding="10,7" Margin="0,0,8,6"/>
+        <ui:UiButton Content="MODIFICA TESSERA" Command="{Binding UpdTesseraCommand}" Padding="10,7" Margin="0,0,8,6"/>
+        <ui:UiButton Content="ELIMINA TESSERA" Command="{Binding DelTesseraCommand}" Padding="10,7" Margin="0,0,8,6"/>
+       </WrapPanel>
+      </StackPanel>
+      <StackPanel x:Name="EditorPanel" Grid.Column="1" Spacing="12">
+       <StackPanel IsVisible="{Binding IsEditorVisible}" Spacing="12">
+        <ContentControl Content="{Binding Editor}"/>
+        <WrapPanel HorizontalAlignment="Center">
+         <ui:UiButton Content="{Binding SaveButtonText}" Command="{Binding SaveCommand}" Padding="12,8" Margin="0,0,8,6"/>
+         <ui:UiButton x:Name="CancelButton" Content="ANNULLA" Command="{Binding CancelCommand}" Padding="12,8" Margin="0,0,0,6"/>
+        </WrapPanel>
+       </StackPanel>
+       <StackPanel IsVisible="{Binding IsSearchVisible}" Spacing="12">
+        <views:PersonSearchView DataContext="{Binding Search}"/>
+        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+         <ui:UiButton Content="CERCA" Command="{Binding SearchCommand}" Padding="12,8"/>
+         <ui:UiButton Content="ANNULLA" Command="{Binding CancelCommand}" Padding="12,8"/>
+        </StackPanel>
+       </StackPanel>
+      </StackPanel>
+     </Grid>
+     <TextBlock Text="{Binding InfoLabel}" Foreground="White" TextWrapping="Wrap" TextAlignment="Center"/>
+    </StackPanel>
+   </ScrollViewer>
+  </ui:PopupBorder>
+  <Grid HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsBusy}" IsHitTestVisible="False" ZIndex="1">
+   <ui:UiWaitIndicator Diameter="264" IsActive="{Binding IsBusy}" RotationSpeed="1.2"/>
+   <TextBlock Text="{Binding WaitMessage}" MaxWidth="200" TextWrapping="Wrap" TextAlignment="Center"
+      Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+  </Grid>
+ </Grid>
+</UserControl>

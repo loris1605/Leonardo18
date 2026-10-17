@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="using:ControlStyles" xmlns:vm="using:Cassa.ViewModels" xmlns:d="using:AppServices.Database" x:Class="Cassa.Views.UscitaSocioView" x:DataType="vm:CassaViewModel">
+ <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" RowSpacing="10">
+  <Grid ColumnDefinitions="*,Auto"><TextBlock Text="ESCE SOCIO" Foreground="White" FontSize="20" FontWeight="Bold"/><ui:UiIconButton Grid.Column="1" XLabel="TORNA ALLA SCHEDA" IconSymbol="ArrowLeft" IconVariant="Filled" Command="{Binding BackCommand}" Padding="10,6"/></Grid>
+  <WrapPanel Grid.Row="1"><TextBlock Text="POSIZIONE" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,6"/><ui:UiTextBox x:Name="ExitPositionBox" Text="{Binding PosizioneUscita,Mode=TwoWay}" Width="140" MaxLength="30" MoveToNextOnEnter="False" Margin="0,0,16,6"/>
+   <TextBlock Text="OPPURE TESSERA" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,6"/><ui:UiTextBox x:Name="ExitCardBox" Text="{Binding TesseraUscita,Mode=TwoWay}" Width="190" MaxLength="30" MoveToNextOnEnter="False" Margin="0,0,12,6"/>
+   <ui:UiIconButton XLabel="CERCA / AGGIORNA" IconSymbol="Search" IconVariant="Filled" Command="{Binding CercaUscitaCommand}" Padding="10,6" Margin="0,0,0,6"/>
+  </WrapPanel>
+  <Border Grid.Row="2" Background="#F4F7FA" CornerRadius="8" Padding="12" IsVisible="{Binding HasSocioUscita}"><StackPanel Spacing="6">
+   <TextBlock Text="{Binding SocioUscita.AnagraficaConEta}" FontSize="20" FontWeight="SemiBold"/>
+   <WrapPanel><TextBlock Text="{Binding SocioUscita.Posizione,StringFormat='Posizione: {0}'}" Margin="0,0,24,0"/><TextBlock Text="{Binding SocioUscita.NumeroTessera,StringFormat='Tessera: {0}'}" Margin="0,0,24,0"/><TextBlock Text="{Binding SocioUscita.CheckinTime,StringFormat='Ingresso: {0:dd/MM/yyyy HH:mm}'}"/></WrapPanel>
+   <TextBlock Text="{Binding GuardarobaUscita}"/><TextBlock Text="{Binding SocioUscita.AvvisoSospesi}" IsVisible="{Binding SocioUscita.HasSospesi}" Foreground="#9A3412" FontWeight="Bold"/>
+  </StackPanel></Border>
+  <Border Grid.Row="3" Background="#F4F7FA" CornerRadius="8" Padding="10" IsVisible="{Binding HasSocioUscita}"><Grid RowDefinitions="Auto,*">
+   <Grid ColumnDefinitions="120,120,*,100,100" Margin="10,6"><TextBlock Text="SETTORE" FontWeight="Bold"/><TextBlock Grid.Column="1" Text="POSTAZIONE" FontWeight="Bold"/><TextBlock Grid.Column="2" Text="DETTAGLIO" FontWeight="Bold"/><TextBlock Grid.Column="3" Text="PREZZO €" FontWeight="Bold"/><TextBlock Grid.Column="4" Text="STATO" FontWeight="Bold"/></Grid>
+   <ListBox Grid.Row="1" ItemsSource="{Binding ContoUscita}" Background="Transparent"><ListBox.Styles><Style Selector="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style></ListBox.Styles>
+    <ListBox.ItemTemplate><DataTemplate x:DataType="d:CassaConto"><Grid ColumnDefinitions="120,120,*,100,100" Margin="0,6"><TextBlock Text="{Binding DescSettore}" TextTrimming="CharacterEllipsis"/><TextBlock Grid.Column="1" Text="{Binding DescPostazione}" TextTrimming="CharacterEllipsis"/><TextBlock Grid.Column="2" Text="{Binding VoiceDesc}" TextTrimming="CharacterEllipsis"/><TextBlock Grid.Column="3" Text="{Binding VoicePrice,StringFormat={}{0:N2}}"/><TextBlock Grid.Column="4" Text="{Binding Stato}"/></Grid></DataTemplate></ListBox.ItemTemplate>
+   </ListBox>
+  </Grid></Border>
+  <Border Grid.Row="4" Background="#F4F7FA" CornerRadius="8" Padding="12" IsVisible="{Binding HasSocioUscita}"><WrapPanel><TextBlock Text="{Binding TotaleUscita,StringFormat='TOTALE: {0:N2} €'}" Margin="0,0,24,0"/><TextBlock Text="{Binding PagatoUscita,StringFormat='GIÀ PAGATO: {0:N2} €'}" Margin="0,0,24,0"/><TextBlock Text="{Binding DaPagareUscita,StringFormat='DA INCASSARE: {0:N2} €'}" FontWeight="Bold"/></WrapPanel></Border>
+  <StackPanel Grid.Row="5" Spacing="8"><TextBlock Text="{Binding AvvisoUscita}" Foreground="White" TextWrapping="Wrap"/>
+   <WrapPanel><ui:UiIconButton XLabel="{Binding IncassaUscitaLabel}" IconSymbol="Save" IconVariant="Filled" Command="{Binding IncassaUscitaCommand}" Padding="12,8" Margin="0,0,10,0"/><ui:UiIconButton XLabel="USCITA CON SOSPESO" IconSymbol="Clipboard" IconVariant="Color" Command="{Binding SospendiUscitaCommand}" Padding="12,8"/></WrapPanel>
+  </StackPanel>
+ </Grid>
+</UserControl>

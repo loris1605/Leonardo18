@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="using:ControlStyles" xmlns:vm="using:Cassa.ViewModels" xmlns:db="using:AppServices.Database" x:Class="Cassa.Views.StoricoFidelityView" x:DataType="vm:CassaViewModel">
+ <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="12">
+  <TextBlock Text="STORICO FIDELITY" Foreground="White" FontSize="20" FontWeight="Bold"/>
+  <WrapPanel Grid.Row="1">
+   <ui:UiTextBox x:Name="HistoryCardBox" MoveToNextOnEnter="False" Text="{Binding TesseraStoricoFidelity,Mode=TwoWay}" PlaceholderText="Tessera del socio" MaxLength="30" Width="230" Margin="0,0,12,6" AutomationProperties.Name="Tessera storico Fidelity"/>
+   <ui:UiIconButton XLabel="CERCA SOCIO" IconSymbol="Search" IconVariant="Filled" Command="{Binding CercaStoricoFidelityCommand}" Padding="10,7"/>
+  </WrapPanel>
+  <Border Grid.Row="2" Background="#F4F7FA" CornerRadius="8" Padding="14"><TextBlock Text="{Binding RiepilogoStoricoFidelity}" TextWrapping="Wrap" FontSize="16"/></Border>
+  <ListBox Grid.Row="3" ItemsSource="{Binding MovimentiFidelity}" Background="#F4F7FA" AutomationProperties.Name="Movimenti Fidelity del socio">
+   <ListBox.ItemTemplate><DataTemplate x:DataType="db:CassaMovimentoFidelity">
+    <Border BorderBrush="#D6DEE6" BorderThickness="0,0,0,1" Padding="10,12" HorizontalAlignment="Stretch">
+     <StackPanel Spacing="5"><TextBlock Text="{Binding Data}" Foreground="#475569"/><TextBlock Text="{Binding Descrizione}" FontWeight="SemiBold" FontSize="17"/><TextBlock Text="{Binding Dettaglio}" TextWrapping="Wrap"/></StackPanel>
+    </Border>
+   </DataTemplate></ListBox.ItemTemplate>
+  </ListBox>
+  <ui:UiIconButton Grid.Row="4" XLabel="TORNA ALLA POSTAZIONE" IconSymbol="BuildingStore" IconVariant="Color" Command="{Binding BackCommand}" HorizontalAlignment="Left" Padding="12,8"/>
+ </Grid>
+</UserControl>

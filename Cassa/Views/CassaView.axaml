@@ -1,0 +1,327 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ui="using:ControlStyles" xmlns:vm="using:Cassa.ViewModels" xmlns:db="using:AppServices.Database" xmlns:views="using:Cassa.Views" xmlns:icons="using:FluentIcons.Avalonia"
+ x:Class="Cassa.Views.CassaView" x:DataType="vm:CassaViewModel"
+ Background="LightSteelBlue" KeyboardNavigation.TabNavigation="Cycle">
+ <Grid Margin="12">
+  <ui:PopupBorder Padding="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="10">
+     <Grid x:Name="HeaderGrid" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+      <ui:UiTitolo x:Name="TitleControl" Text="{Binding Title}" SubTitolo="True" FontSize="22" VerticalAlignment="Center"/>
+      <ui:UiIconButton x:Name="MenuButton" Grid.Column="1" XLabel="TORNA AL MENU" IconSymbol="Home" IconVariant="Color"
+       AutomationProperties.Name="Torna al menu" Command="{Binding MenuCommand}" Padding="12,8"/>
+     </Grid>
+     <TextBlock Grid.Row="1" Text="{Binding ReceiverStatus}" Foreground="White" FontSize="13"/>
+     <Grid Grid.Row="2" IsVisible="{Binding !IsBusy}" IsEnabled="{Binding IsUiReady}">
+      <Grid RowDefinitions="Auto,Auto,*" RowSpacing="10" IsVisible="{Binding IsPostazione}">
+       <WrapPanel>
+        <ui:UiIconButton XLabel="ENTRA SOCIO" IconSymbol="PersonAdd" IconVariant="Color" AutomationProperties.Name="Entra socio"
+         Command="{Binding EntraSocioCommand}" Padding="12,8" Margin="0,0,10,8"/>
+        <ui:UiIconButton XLabel="ESCE SOCIO" IconSymbol="ArrowRight" IconVariant="Filled" AutomationProperties.Name="Esce socio" Command="{Binding EsceSocioCommand}" Padding="12,8" Margin="0,0,10,8"/>
+        <ui:UiIconButton XLabel="SOCI ALL'INTERNO" IconSymbol="PeopleTeam" IconVariant="Color" AutomationProperties.Name="Soci all'interno"
+         Command="{Binding ListaSociCommand}" Padding="12,8" Margin="0,0,10,8"/>
+        <ui:UiIconButton XLabel="ABBONAMENTI" IconSymbol="TicketDiagonal" IconVariant="Filled" AutomationProperties.Name="Acquisto abbonamenti" ToolTip.Tip="{Binding AvvisoAcquistoAbbonamenti}"
+         Command="{Binding AcquistaAbbonamentoCommand}" Padding="12,8" Margin="0,0,10,8"/>
+        <ui:UiIconButton XLabel="VEDI FIDELITY" IconSymbol="TicketDiagonal" IconVariant="Filled" AutomationProperties.Name="Vedi Fidelity" Command="{Binding ApriStoricoFidelityCommand}" Padding="12,8" Margin="0,0,10,8"/>
+         <ui:UiIconButton XLabel="SOSPESI" IconSymbol="Clipboard" IconVariant="Color" Command="{Binding ApriSospesiCommand}" Padding="12,8" Margin="0,0,10,8"/>
+       </WrapPanel>
+       <WrapPanel Grid.Row="1">
+        <TextBlock Text="POSIZIONE" Foreground="White" VerticalAlignment="Center" Margin="0,0,12,8"/>
+        <ui:UiTextBox x:Name="PosizioneBox" Text="{Binding Posizione, Mode=TwoWay}" MaxLength="30" Width="180"
+         MoveToNextOnEnter="False" AutomationProperties.Name="Posizione" Margin="0,0,12,8"/>
+        <ui:UiIconButton XLabel="APRI SCHEDA" IconSymbol="Clipboard" IconVariant="Color" AutomationProperties.Name="Apri scheda"
+         Command="{Binding OpenSheetCommand}" Padding="12,8" Margin="0,0,12,8"/>
+        <ui:UiIconButton XLabel="ANNULLA" IconSymbol="DismissCircle" IconVariant="Color" AutomationProperties.Name="Annulla scheda"
+         Command="{Binding ClearSheetCommand}" Padding="12,8" Margin="0,0,12,8"/>
+       </WrapPanel>
+       <Grid x:Name="SheetGrid" Grid.Row="2" ColumnDefinitions="170,*,*" RowDefinitions="Auto,*" ColumnSpacing="14" RowSpacing="10" IsVisible="{Binding HasSheet}">
+        <Border x:Name="SheetIdentity" Grid.ColumnSpan="3" Background="#F4F7FA" CornerRadius="8" Padding="10" VerticalAlignment="Top">
+         <StackPanel Spacing="6">
+          <TextBlock Text="{Binding Sheet.AnagraficaConEta}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap"/>
+          <WrapPanel>
+           <TextBlock Text="{Binding Sheet.Posizione, StringFormat='Posizione: {0}'}" Margin="0,0,20,4"/>
+           <TextBlock Text="{Binding Sheet.NumeroTessera, StringFormat='Tessera: {0}'}" Margin="0,0,20,4"/>
+           <TextBlock Text="{Binding Sheet.Nascita, StringFormat='Nascita: {0}'}" Margin="0,0,20,4"/>
+           <TextBlock Text="{Binding Sheet.CheckinTime, StringFormat='Ingresso: {0:dd/MM/yyyy HH:mm}'}"/>
+          </WrapPanel>
+          <TextBlock Text="NON ENTRA · ingresso annullato" Foreground="#A02020" FontWeight="Bold" IsVisible="{Binding Sheet.IngressoAnnullato}"/>
+            <TextBlock Text="{Binding Sheet.Note}" TextWrapping="Wrap"/>
+          <WrapPanel IsVisible="{Binding Sheet.HasSospesi}"><TextBlock Text="{Binding Sheet.AvvisoSospesi}" Foreground="#9A3412" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+           <ui:UiIconButton XLabel="VEDI SOSPESI" IconSymbol="Clipboard" IconVariant="Color" Command="{Binding ApriSospesiSocioCommand}" CommandParameter="{Binding Sheet.NumeroTessera}" Padding="8,4"/></WrapPanel>
+          <TextBlock Text="TESSERA BLOCCATA" Foreground="#A02020" IsVisible="{Binding Sheet.Blocco}"/>
+         </StackPanel>
+        </Border>
+        <views:GuardarobaControl x:Name="GuardarobaPanel" Grid.Row="1" VerticalAlignment="Top"/>
+        <Grid x:Name="SheetAccount" Grid.Row="1" Grid.Column="1" RowDefinitions="Auto,*,Auto" RowSpacing="10" IsEnabled="{Binding !IsPaymentBusy}">
+        <TextBlock Text="DETTAGLIO CONTO" Foreground="White" FontWeight="Bold"/>
+        <Border Grid.Row="1" Background="#F4F7FA" CornerRadius="8" Padding="12">
+         <ScrollViewer x:Name="AccountScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+          <StackPanel MinWidth="760" Spacing="6">
+           <Grid ColumnDefinitions="120,130,120,*,90,130" ColumnSpacing="10">
+            <Grid.Styles>
+             <Style Selector="Button.contoSort">
+              <Setter Property="Background" Value="Transparent"/>
+              <Setter Property="BorderThickness" Value="0"/>
+              <Setter Property="Padding" Value="0,4"/>
+              <Setter Property="HorizontalAlignment" Value="Stretch"/>
+              <Setter Property="HorizontalContentAlignment" Value="Left"/>
+              <Setter Property="FontWeight" Value="Bold"/>
+              <Setter Property="FontSize" Value="12"/>
+             </Style>
+            </Grid.Styles>
+            <Button x:Name="SortDataButton" Classes="contoSort" Content="{Binding DataHeader}" Command="{Binding SortContoCommand}"
+             CommandParameter="DataOra" AutomationProperties.Name="Ordina per data e ora"/>
+            <Button x:Name="SortPostazioneButton" Grid.Column="1" Classes="contoSort" Content="{Binding PostazioneHeader}" Command="{Binding SortContoCommand}"
+             CommandParameter="DescPostazione" AutomationProperties.Name="Ordina per postazione"/>
+            <Button x:Name="SortSettoreButton" Grid.Column="2" Classes="contoSort" Content="{Binding SettoreHeader}" Command="{Binding SortContoCommand}"
+             CommandParameter="DescSettore" AutomationProperties.Name="Ordina per settore"/>
+            <Button x:Name="SortDettaglioButton" Grid.Column="3" Classes="contoSort" Content="{Binding DettaglioHeader}" Command="{Binding SortContoCommand}"
+             CommandParameter="VoiceDesc" AutomationProperties.Name="Ordina per dettaglio"/>
+            <Button x:Name="SortPrezzoButton" Grid.Column="4" Classes="contoSort" Content="{Binding PrezzoHeader}" Command="{Binding SortContoCommand}"
+             CommandParameter="VoicePrice" AutomationProperties.Name="Ordina per prezzo"/>
+            <Button x:Name="SortStatoButton" Grid.Column="5" Classes="contoSort" Content="{Binding StatoHeader}" Command="{Binding SortContoCommand}"
+             CommandParameter="Stato" AutomationProperties.Name="Ordina per stato"/>
+           </Grid>
+           <ItemsControl ItemsSource="{Binding Conto}">
+            <ItemsControl.ItemTemplate>
+             <DataTemplate x:DataType="db:CassaConto">
+              <StackPanel Classes="contoRow" Margin="0,6" Spacing="3" Background="Transparent" ContextRequested="OnAccountContextRequested">
+               <Grid ColumnDefinitions="120,130,120,*,90,130" ColumnSpacing="10">
+                <TextBlock Text="{Binding DataOra, StringFormat='{}{0:dd/MM HH:mm}'}"/>
+                <TextBlock Grid.Column="1" Text="{Binding DescPostazione}" TextWrapping="Wrap"/>
+                <TextBlock Grid.Column="2" Text="{Binding DescSettore}" TextWrapping="Wrap"/>
+                <TextBlock Grid.Column="3" Text="{Binding VoiceDesc}" TextWrapping="Wrap"/>
+                <TextBlock Grid.Column="4" Text="{Binding VoicePrice, StringFormat='{}{0:0.00} €'}"/>
+                <CheckBox Grid.Column="5" IsChecked="{Binding Pagato, Mode=OneWay}" Content="{Binding Stato}"
+                 Command="{Binding $parent[UserControl].((vm:CassaViewModel)DataContext).SetPagamentoCommand}"
+                 CommandParameter="{Binding}" ToolTip.Tip="Seleziona per cambiare lo stato del pagamento"
+                 AutomationProperties.Name="{Binding VoiceDesc, StringFormat='Pagamento: {0}'}"/>
+               </Grid>
+               <TextBlock Text="{Binding Note}" Foreground="#536170" FontSize="12" TextWrapping="Wrap"/>
+              </StackPanel>
+             </DataTemplate>
+            </ItemsControl.ItemTemplate>
+           </ItemsControl>
+          </StackPanel>
+         </ScrollViewer>
+        </Border>
+        <WrapPanel Grid.Row="2">
+         <TextBlock Text="{Binding Totale, StringFormat='Totale: {0:0.00} €'}" Foreground="White" FontWeight="Bold" Margin="0,0,24,0"/>
+         <TextBlock Text="{Binding DaPagare, StringFormat='Da pagare: {0:0.00} €'}" Foreground="White" FontWeight="Bold"/>
+        </WrapPanel>
+        </Grid>
+        <Grid x:Name="SheetCharges" Grid.Row="1" Grid.Column="2" RowDefinitions="Auto,Auto,*" RowSpacing="10">
+         <TextBlock Text="VOCI DI SPESA" Foreground="White" FontWeight="Bold"/>
+         <StackPanel Grid.Row="1"><TextBlock Text="Seleziona una voce per addebitarla al conto." Foreground="White" TextWrapping="Wrap"/>
+          <CheckBox Content="{Binding CreditoFidelityLabel}" Foreground="White" IsChecked="{Binding UsaCreditoFidelity,Mode=TwoWay}" IsVisible="{Binding HasCreditoFidelity}"/>
+         </StackPanel>
+         <TextBlock Grid.Row="2" Text="Nessuna voce di spesa configurata per questa postazione." Foreground="White"
+          TextWrapping="Wrap" IsVisible="{Binding !HasVociSpesa}"/>
+         <TabControl x:Name="SectorTabs" Grid.Row="2" ItemsSource="{Binding SettoriSpesa}" SelectedItem="{Binding SelectedSettoreSpesa, Mode=TwoWay}" IsVisible="{Binding HasVociSpesa}"
+          ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+          <TabControl.ItemsPanel>
+           <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+          </TabControl.ItemsPanel>
+          <TabControl.ItemTemplate>
+           <DataTemplate x:DataType="vm:CassaSettoreSpesa">
+            <TextBlock Text="{Binding Nome}" FontWeight="SemiBold"/>
+           </DataTemplate>
+          </TabControl.ItemTemplate>
+          <TabControl.ContentTemplate>
+           <DataTemplate x:DataType="vm:CassaSettoreSpesa">
+            <Border BorderBrush="#B9CBDE" BorderThickness="1" CornerRadius="8" Padding="8">
+              <ItemsControl ItemsSource="{Binding Voci}" VerticalAlignment="Top">
+               <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate>
+               </ItemsControl.ItemsPanel>
+               <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="db:CassaVoceSpesa">
+                 <ui:UiIconButton
+                  Command="{Binding $parent[UserControl].((vm:CassaViewModel)DataContext).AddChargeCommand}"
+                  CommandParameter="{Binding}" Padding="6" Margin="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                  AutomationProperties.Name="{Binding Label}">
+                  <StackPanel Spacing="4">
+                   <icons:SymbolIcon Symbol="AddCircle" IconVariant="Color" FontSize="18" HorizontalAlignment="Center"/>
+                   <TextBlock Text="{Binding Descrizione}" TextWrapping="Wrap" TextAlignment="Center" FontSize="12"/>
+                   <TextBlock Text="{Binding Prezzo, StringFormat='{}{0:0.00} €'}" TextAlignment="Center" FontWeight="SemiBold" FontSize="12"/>
+                  </StackPanel>
+                 </ui:UiIconButton>
+                </DataTemplate>
+               </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Border>
+           </DataTemplate>
+          </TabControl.ContentTemplate>
+         </TabControl>
+        </Grid>
+       </Grid>
+      </Grid>
+      <Grid ColumnDefinitions="*,*" RowDefinitions="*,Auto,Auto,Auto" ColumnSpacing="18" RowSpacing="10" IsVisible="{Binding IsEntry}">
+       <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel Spacing="10">
+       <TextBlock Text="ACCESSO NUOVO SOCIO" Foreground="White" FontSize="18" FontWeight="Bold"/>
+       <WrapPanel>
+        <TextBlock Text="TESSERA" Foreground="White" VerticalAlignment="Center" Margin="0,0,12,8"/>
+        <ui:UiTextBox x:Name="TesseraBox" Text="{Binding NumeroTessera, Mode=TwoWay}" MaxLength="30" Width="220"
+         MoveToNextOnEnter="False" AutomationProperties.Name="Numero tessera" Margin="0,0,12,8"/>
+        <ui:UiIconButton XLabel="IDENTIFICA" IconSymbol="PersonKey" IconVariant="Color" AutomationProperties.Name="Identifica socio"
+         Command="{Binding FindCardCommand}" Padding="12,8" Margin="0,0,12,8"/>
+        <ui:UiIconButton XLabel="AZZERA" IconSymbol="DismissCircle" IconVariant="Color" AutomationProperties.Name="Azzera ingresso"
+         Command="{Binding ResetEntryCommand}" Padding="12,8" Margin="0,0,12,8"/>
+       </WrapPanel>
+       <Border IsVisible="{Binding HasMember}" Background="#F4F7FA" CornerRadius="8" Padding="14">
+        <StackPanel Spacing="6">
+         <TextBlock Text="{Binding Member.Anagrafica}" FontSize="20" FontWeight="SemiBold"/>
+         <TextBlock Text="{Binding Rientro.Avviso}" IsVisible="{Binding HasRientro}" Foreground="#166534" FontWeight="Bold" TextWrapping="Wrap"/>
+         <TextBlock IsVisible="{Binding Member.HasSospesi}" Text="{Binding Member.AvvisoSospesi}" Foreground="#9A3412" FontWeight="Bold" TextWrapping="Wrap"/>
+         <ScrollViewer IsVisible="{Binding Member.HasSospesi}" MaxHeight="240" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <ItemsControl ItemsSource="{Binding SospesiIngresso}" AutomationProperties.Name="Dettaglio sospesi del socio">
+           <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="db:CassaSospeso">
+             <Border BorderBrush="#D6DEE6" BorderThickness="0,0,0,1" Padding="0,8">
+              <StackPanel Spacing="4">
+               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <StackPanel><TextBlock Text="{Binding DataOra,StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"/><TextBlock Text="{Binding Origine}" FontWeight="SemiBold"/></StackPanel>
+                <TextBlock Grid.Column="1" Text="{Binding Importo,StringFormat='{}{0:N2} €'}" FontWeight="Bold" Foreground="#9A3412"/>
+               </Grid>
+               <TextBlock Text="{Binding Descrizione}" TextWrapping="Wrap"/>
+               <TextBlock Text="{Binding Dettaglio}" TextWrapping="Wrap"/>
+               <ui:UiIconButton XLabel="SALDA SOSPESO" IconSymbol="Save" IconVariant="Filled" IsVisible="{Binding CanIncassare}"
+                Command="{Binding $parent[UserControl].((vm:CassaViewModel)DataContext).IncassaSospesoCommand}" CommandParameter="{Binding}" Padding="10,7" HorizontalAlignment="Left"/>
+              </StackPanel>
+             </Border>
+            </DataTemplate>
+           </ItemsControl.ItemTemplate>
+          </ItemsControl>
+         </ScrollViewer>
+         <WrapPanel>
+          <TextBlock Text="{Binding Member.NumeroSocio, StringFormat='Codice socio: {0}'}" Margin="0,0,20,4"/>
+          <TextBlock Text="{Binding Member.Nascita, StringFormat='Nascita: {0}'}" Margin="0,0,20,4"/>
+          <TextBlock Text="{Binding Member.Scadenza, StringFormat='Scadenza tessera: {0}'}"/>
+         </WrapPanel>
+        </StackPanel>
+       </Border>
+       <views:FidelityIngressoView/>
+       <ui:UiIconButton XLabel="APRI SCHEDA DEL SOCIO" IconSymbol="Clipboard" IconVariant="Color"
+        AutomationProperties.Name="Apri scheda del socio" Command="{Binding OpenMemberSheetCommand}"
+        IsVisible="{Binding MemberInside}" Padding="12,8" HorizontalAlignment="Left"/>
+       </StackPanel></ScrollViewer>
+       <Grid Grid.Column="1" RowDefinitions="Auto,160,Auto,*" RowSpacing="10" IsVisible="{Binding ShowIngressi}">
+       <TextBlock Text="TARIFFA DI INGRESSO" Foreground="White" FontWeight="Bold"/>
+       <ListBox Grid.Row="1" ItemsSource="{Binding Ingressi}" IsEnabled="{Binding CanSelectIngresso}" SelectedItem="{Binding SelectedIngresso, Mode=TwoWay}"
+        Background="#F4F7FA" AutomationProperties.Name="Tariffa di ingresso">
+        <ListBox.ItemTemplate>
+         <DataTemplate x:DataType="db:CassaIngresso">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20" Margin="4">
+           <StackPanel>
+            <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
+            <TextBlock Text="FREE DRINK" IsVisible="{Binding FreeDrink}" FontSize="12"/>
+           </StackPanel>
+           <TextBlock Grid.Column="1" Text="{Binding Prezzo, StringFormat='{}{0:0.00} €'}" VerticalAlignment="Center"/>
+          </Grid>
+         </DataTemplate>
+        </ListBox.ItemTemplate>
+       </ListBox>
+       <TextBlock Grid.Row="2" Text="{Binding SceltaIngresso}" Foreground="White" FontWeight="Bold" TextWrapping="Wrap"/>
+       <ScrollViewer Grid.Row="3" IsVisible="{Binding HasAbbonamentiIngresso}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl ItemsSource="{Binding AbbonamentiIngresso}" IsEnabled="{Binding CanSelectIngresso}">
+         <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:TesseraAbbonamentoViewModel">
+           <Border Background="#F8F3E7" BorderBrush="#D7C7A4" BorderThickness="2" CornerRadius="16" Padding="16" Margin="0,0,0,12">
+            <StackPanel Spacing="10">
+             <TextBlock Text="TESSERA ABBONAMENTO" Foreground="#536B66" FontSize="11" FontWeight="Bold" LetterSpacing="2"/>
+             <TextBlock Text="{Binding Nome}" Foreground="#163E38" FontSize="20" FontWeight="Bold" TextWrapping="Wrap"/>
+             <TextBlock Text="{Binding Riepilogo}" Foreground="#536B66" TextWrapping="Wrap"/>
+             <ItemsControl ItemsSource="{Binding Bollini}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+               <DataTemplate x:DataType="vm:BollinoIngressoViewModel">
+                <StackPanel Width="90" Margin="0,0,8,10" Spacing="5">
+                 <Button Width="64" Height="64" CornerRadius="32" BorderThickness="2" HorizontalAlignment="Center"
+                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="{Binding Sfondo}" BorderBrush="{Binding Bordo}"
+                  IsEnabled="{Binding Disponibile}" Command="{Binding $parent[UserControl].((vm:CassaViewModel)DataContext).SelezionaBollinoCommand}" CommandParameter="{Binding}"
+                  AutomationProperties.Name="{Binding Numero,StringFormat='Bollino abbonamento {0}'}">
+                  <TextBlock Text="{Binding Simbolo}" FontSize="24" FontWeight="Bold" Foreground="#163E38"/>
+                 </Button>
+                 <TextBlock Text="{Binding Stato}" TextAlignment="Center" FontSize="11" Foreground="#475569"/>
+                </StackPanel>
+               </DataTemplate>
+              </ItemsControl.ItemTemplate>
+             </ItemsControl>
+             <TextBlock Text="Seleziona un bollino disponibile oppure scegli una tariffa di ingresso." Foreground="#536B66" FontSize="11" TextWrapping="Wrap"/>
+            </StackPanel>
+           </Border>
+          </DataTemplate>
+         </ItemsControl.ItemTemplate>
+        </ItemsControl>
+       </ScrollViewer>
+       </Grid>
+       <Grid Grid.Row="1" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="10" IsVisible="{Binding ShowIngressi}">
+        <ui:UiLabelForGrid Text="POSIZIONE:"/>
+        <ui:UiTextBox x:Name="IngressoPosizioneBox" Grid.Column="1" Text="{Binding EntryPosition, Mode=TwoWay}"
+         MaxLength="30" MoveToNextOnEnter="False" AutomationProperties.Name="Posizione nuovo ingresso"/>
+        <ui:UiLabelForGrid Grid.Row="1" Text="NOTE:"/>
+        <ui:UiTextBox Grid.Column="1" Grid.Row="1" Text="{Binding Note, Mode=TwoWay}" MaxLength="50"/>
+       </Grid>
+       <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding EntryWarning}" Foreground="White" TextWrapping="Wrap"/>
+       <WrapPanel Grid.Row="3" Grid.ColumnSpan="2">
+        <ui:UiIconButton XLabel="REGISTRA INGRESSO" IconSymbol="PersonAdd" IconVariant="Color"
+         IsVisible="{Binding ShowIngressi}" AutomationProperties.Name="Registra ingresso" Command="{Binding RegisterEntryCommand}" Padding="12,8" Margin="0,0,12,8"/>
+        <ui:UiIconButton XLabel="TORNA ALLA POSTAZIONE" IconSymbol="BuildingStore" IconVariant="Color"
+         AutomationProperties.Name="Torna alla postazione" Command="{Binding BackCommand}" Padding="12,8" Margin="0,0,12,8"/>
+       </WrapPanel>
+      </Grid>
+      <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="10" IsVisible="{Binding IsList}">
+       <TextBlock Text="SOCI ALL'INTERNO" Foreground="White" FontSize="18" FontWeight="Bold"/>
+       <ui:UiTextBox Grid.Row="1" Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Filtra per posizione, nome o tessera"/>
+       <Border Grid.Row="2" Background="#F4F7FA" CornerRadius="8" Padding="6">
+        <ListBox x:Name="SociList" ItemsSource="{Binding Schede}" SelectedItem="{Binding SelectedScheda, Mode=TwoWay}"
+         Background="Transparent" AutomationProperties.Name="Soci all'interno">
+         <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="db:CassaScheda">
+           <StackPanel Spacing="4" Margin="4,6">
+            <WrapPanel>
+             <TextBlock Text="{Binding Posizione, StringFormat='Posizione {0}'}" FontWeight="Bold" Margin="0,0,16,0"/>
+             <TextBlock Text="{Binding Anagrafica}" FontWeight="SemiBold"/>
+            </WrapPanel>
+            <WrapPanel>
+             <TextBlock Text="{Binding NumeroTessera, StringFormat='Tessera: {0}'}" Margin="0,0,16,4"/>
+             <TextBlock Text="{Binding Nascita, StringFormat='Nascita: {0}'}" Margin="0,0,16,4"/>
+             <TextBlock Text="{Binding CheckinTime, StringFormat='Ingresso: {0:dd/MM/yyyy HH:mm}'}"/>
+            </WrapPanel>
+            <WrapPanel>
+             <TextBlock Text="{Binding Grb1, StringFormat='Grb 1: {0}'}" Margin="0,0,16,4"/>
+             <TextBlock Text="{Binding Grb2, StringFormat='Grb 2: {0}'}" Margin="0,0,16,4"/>
+             <TextBlock Text="{Binding Grb3, StringFormat='Grb 3: {0}'}" Margin="0,0,16,4"/>
+             <TextBlock Text="{Binding Grb4, StringFormat='Grb 4: {0}'}" Margin="0,0,16,4"/>
+             <TextBlock Text="{Binding Consumazione, StringFormat='Consumazione: {0:0.00} €'}"/>
+            </WrapPanel>
+            <TextBlock Text="BLOCCATO" Foreground="#A02020" IsVisible="{Binding Blocco}"/>
+           </StackPanel>
+          </DataTemplate>
+         </ListBox.ItemTemplate>
+        </ListBox>
+       </Border>
+       <TextBlock Grid.Row="3" Text="{Binding ResultText}" Foreground="White"/>
+       <WrapPanel Grid.Row="4">
+        <ui:UiIconButton XLabel="APRI SCHEDA" IconSymbol="Clipboard" IconVariant="Color" AutomationProperties.Name="Apri scheda selezionata"
+         Command="{Binding OpenSelectedCommand}" Padding="12,8" Margin="0,0,12,8"/>
+        <ui:UiIconButton XLabel="AGGIORNA" IconSymbol="ArrowSync" IconVariant="Color" AutomationProperties.Name="Aggiorna elenco soci"
+         Command="{Binding RefreshListCommand}" Padding="12,8" Margin="0,0,12,8"/>
+        <ui:UiIconButton XLabel="TORNA ALLA POSTAZIONE" IconSymbol="BuildingStore" IconVariant="Color"
+         AutomationProperties.Name="Torna alla postazione" Command="{Binding BackCommand}" Padding="12,8" Margin="0,0,12,8"/>
+       </WrapPanel>
+      </Grid>
+     </Grid>
+      <views:AcquistoAbbonamentoView Grid.Row="2" IsVisible="{Binding IsAcquistoAbbonamento}" IsEnabled="{Binding IsUiReady}"/>
+      <views:UscitaSocioView Grid.Row="2" IsVisible="{Binding IsUscita}" IsEnabled="{Binding IsUiReady}"/>
+      <views:StoricoFidelityView Grid.Row="2" IsVisible="{Binding IsStoricoFidelity}" IsEnabled="{Binding IsUiReady}"/>
+      <views:SospesiView Grid.Row="2" IsVisible="{Binding IsSospesi}" IsEnabled="{Binding IsUiReady}"/>
+     <TextBlock Grid.Row="3" Text="{Binding InfoLabel}" Foreground="White" TextWrapping="Wrap"/>
+     <Grid Grid.Row="2" IsVisible="{Binding IsBusy}" IsHitTestVisible="False">
+      <ui:UiWaitIndicator Diameter="264" IsActive="{Binding IsBusy}" RotationSpeed="1.2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      <TextBlock Text="{Binding WaitMessage}" Foreground="White" MaxWidth="200" TextWrapping="Wrap" TextAlignment="Center"
+       HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+     </Grid>
+    </Grid>
+  </ui:PopupBorder>
+ </Grid>
+</UserControl>

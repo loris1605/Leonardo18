@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Login.ViewModels" xmlns:map="using:Login.ViewModels.Map"
+             xmlns:ui="using:ControlStyles"
+             x:Class="Login.Views.LoginView" x:DataType="vm:LoginViewModel"
+             Background="LightSteelBlue" KeyboardNavigation.TabNavigation="Cycle">
+  <Grid Margin="24">
+    <ui:PopupBorder x:Name="Popup" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    MaxWidth="680" Padding="24" IsVisible="{Binding !IsBusy}">
+      <StackPanel Spacing="16">
+        <ui:UiTitolo Text="Leonardo18 - LOGIN" SubTitolo="True" FontSize="22" HorizontalAlignment="Center" />
+        <Grid ColumnDefinitions="160,*" RowDefinitions="Auto,Auto" IsEnabled="{Binding IsUiReady}">
+          <ui:UiLabelForGrid Text="OPERATORE:" />
+          <ui:UiComboBox x:Name="OperatoreCombo" Grid.Column="1" MinWidth="280" Margin="0,4"
+                    ItemsSource="{Binding DataSource}" SelectedItem="{Binding BindingT, Mode=TwoWay}">
+            <ui:UiComboBox.ItemTemplate>
+              <DataTemplate x:DataType="map:LoginMap"><TextBlock Text="{Binding NomeOperatore}" /></DataTemplate>
+            </ui:UiComboBox.ItemTemplate>
+          </ui:UiComboBox>
+          <ui:UiLabelForGrid Grid.Row="1" Text="PASSWORD:" />
+          <ui:UiTextBox x:Name="PasswordBox" Grid.Row="1" Grid.Column="1" Margin="0,4"
+                        PasswordChar="●" MoveToNextOnEnter="False" Text="{Binding PasswordText, Mode=TwoWay}" />
+        </Grid>
+        <TextBlock Text="{Binding InfoError}" Foreground="White" TextWrapping="Wrap" MaxWidth="480"
+                   HorizontalAlignment="Center" TextAlignment="Center" />
+        <ui:UiIconButton x:Name="EntraButton" XLabel="ENTRA" IconSymbol="PersonKey" IconVariant="Color"
+                     AutomationProperties.Name="Entra" Command="{Binding SaveCommand}"
+                     Height="40" MinWidth="120" Padding="12,6" HorizontalAlignment="Center" />
+      </StackPanel>
+    </ui:PopupBorder>
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsBusy}" IsHitTestVisible="False" ZIndex="1">
+      <ui:UiWaitIndicator Diameter="264" IsActive="{Binding IsBusy}" RotationSpeed="1.2" />
+      <TextBlock Text="{Binding WaitMessage}" MaxWidth="200" TextWrapping="Wrap" TextAlignment="Center" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+    </Grid>
+  </Grid>
+</UserControl>

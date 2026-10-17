@@ -1,0 +1,124 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ControlStyles">
+
+    <Styles.Resources>
+        <LinearGradientBrush x:Key="GlassButtonBackground"
+                             StartPoint="0%,0%"
+                             EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#70FFFFFF"/>
+            <GradientStop Offset="0.45" Color="#302A3342"/>
+            <GradientStop Offset="1" Color="#70101824"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="GlassButtonHoverBackground"
+                             StartPoint="0%,0%"
+                             EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#90FFFFFF"/>
+            <GradientStop Offset="0.45" Color="#50485868"/>
+            <GradientStop Offset="1" Color="#80202B3B"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="GlassButtonPressedBackground"
+                             StartPoint="0%,0%"
+                             EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#60202B3B"/>
+            <GradientStop Offset="0.55" Color="#40364250"/>
+            <GradientStop Offset="1" Color="#70FFFFFF"/>
+        </LinearGradientBrush>
+    </Styles.Resources>
+
+    <Design.PreviewWith>
+        <Border Padding="30" Background="#263442">
+            <local:UiButton Content="Glass button"
+                            ToolTipText="Press me"/>
+        </Border>
+    </Design.PreviewWith>
+
+    <Style Selector="local|UiButton.UiButtonStyle">
+        <!-- proprietà normali... -->
+        <Setter Property="Background" Value="{DynamicResource GlassButtonBackground}"/>
+        <Setter Property="BorderBrush" Value="#A0FFFFFF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ClipToBounds="True">
+                  <!-- Ombra: non usa più Margin che influisce sulla misura; spostamento visivo con RenderTransform -->
+                  <Border x:Name="PART_Shadow"
+                          Background="Transparent"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          IsHitTestVisible="False">
+                    <Border.RenderTransform>
+                      <TranslateTransform Y="6"/>
+                    </Border.RenderTransform>
+                  </Border>
+
+                  <!-- Bordo principale: rispetta MinHeight/MinWidth del controllo -->
+                  <Border x:Name="PART_GlassBorder"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          Padding="{TemplateBinding Padding}"
+                          MinHeight="{TemplateBinding MinHeight}"
+                          MinWidth="{TemplateBinding MinWidth}"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch">
+                    <Grid ClipToBounds="True">
+                      <!-- Riflesso superiore -->
+                      <Border Height="1"
+                              Margin="8,1,8,0"
+                              VerticalAlignment="Top"
+                              CornerRadius="12"
+                              Background="#C0FFFFFF"
+                              IsHitTestVisible="False"/>
+
+                      <ContentPresenter
+                          x:Name="PART_ContentPresenter"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Padding="{TemplateBinding Padding}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Grid>
+                  </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- Hover: aggiorna direttamente il PART_Shadow nel template -->
+    <Style Selector="local|UiButton.UiButtonStyle:pointerover">
+      <Setter Property="Background" Value="{DynamicResource GlassButtonHoverBackground}"/>
+      <Setter Property="BorderBrush" Value="#E0FFFFFF"/>
+      <Setter Property="RenderTransform" Value="translate(0px, -1px)"/>
+    </Style>
+    
+    <Style Selector="local|UiButton.UiButtonStyle:pointerover /template/ Border#PART_Shadow">
+      <Setter Property="Margin" Value="0,8,0,0"/>
+      <Setter Property="Background" Value="#2A000000"/>
+    </Style>
+    
+    <!-- Pressed: aggiorna il PART_Shadow nel template -->
+    <Style Selector="local|UiButton.UiButtonStyle:pressed">
+      <Setter Property="Background" Value="{DynamicResource GlassButtonPressedBackground}"/>
+      <Setter Property="BorderBrush" Value="#80FFFFFF"/>
+      <Setter Property="RenderTransform" Value="translate(0px, 3px) scale(0.98)"/>
+    </Style>
+    
+    <Style Selector="local|UiButton.UiButtonStyle:pressed /template/ Border#PART_Shadow">
+      <Setter Property="Margin" Value="0,3,0,0"/>
+      <Setter Property="Background" Value="#18000000"/>
+    </Style>
+
+    <Style Selector="local|UiButton.UiButtonStyle:disabled">
+        <Setter Property="Opacity" Value="0.45"/>
+        <Setter Property="Cursor" Value="Arrow"/>
+        <Setter Property="RenderTransform" Value="none"/>
+    </Style>
+
+</Styles>

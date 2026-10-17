@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ui="using:ControlStyles" xmlns:vm="using:Configurazione.ViewModels"
+ x:Class="Configurazione.Views.ConfigurazioneGroupView" x:DataType="vm:ConfigurazioneGroupViewModel">
+ <Grid MinHeight="340">
+  <StackPanel Spacing="10" IsVisible="{Binding !IsBusy}">
+   <TextBlock Text="{Binding Title}" Foreground="White" FontSize="18" FontWeight="Bold"/>
+   <WrapPanel>
+    <ui:UiIconButton Padding="10,7" XLabel="AGGIUNGI" Command="{Binding AddCommand}" Margin="0,0,8,6" IconSymbol="AddCircle" IconVariant="Color"/>
+    <ui:UiIconButton Padding="10,7" XLabel="MODIFICA" Command="{Binding EditCommand}" Margin="0,0,8,6" IconSymbol="Edit" IconVariant="Color"/>
+    <ui:UiIconButton Padding="10,7" XLabel="ELIMINA" Command="{Binding DeleteCommand}" Margin="0,0,8,6" IconSymbol="Delete" IconVariant="Filled"/>
+    <ui:UiIconButton Padding="10,7" XLabel="{Binding LinksText}" Command="{Binding LinksCommand}" IsVisible="{Binding HasLinks}" Margin="0,0,8,6" IconSymbol="Link" IconVariant="Filled"/>
+    <ui:UiIconButton Padding="10,7" XLabel="AGGIORNA" Command="{Binding RefreshCommand}" Margin="0,0,8,6" IconSymbol="ArrowSync" IconVariant="Color"/>
+   </WrapPanel>
+   <ui:UiTextBox Text="{Binding SearchText,Mode=TwoWay}" PlaceholderText="Filtra per nome o associazione"/>
+   <Border Background="#F4F7FA" CornerRadius="8" Padding="6">
+    <TreeView x:Name="Elenco" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected,Mode=TwoWay}"
+       Height="280" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+     <TreeView.Styles>
+      <Style Selector="TreeViewItem">
+       <Setter Property="IsExpanded" Value="False"/>
+       <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      </Style>
+     </TreeView.Styles>
+     <TreeView.ItemTemplate>
+      <TreeDataTemplate x:DataType="vm:ConfigurazioneTreeNode" ItemsSource="{Binding Children}">
+       <StackPanel Margin="0,4">
+        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+        <TextBlock Text="{Binding Dettagli}" FontSize="12" TextWrapping="Wrap"/>
+       </StackPanel>
+      </TreeDataTemplate>
+     </TreeView.ItemTemplate>
+    </TreeView>
+   </Border>
+   <TextBlock Text="{Binding ResultText}" Foreground="White"/>
+   <TextBlock Text="{Binding InfoLabel}" Foreground="White" TextWrapping="Wrap"/>
+  </StackPanel>
+  <Grid IsVisible="{Binding IsBusy}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+   <ui:UiWaitIndicator Diameter="264" IsActive="{Binding IsBusy}" RotationSpeed="1.2"/>
+   <TextBlock Text="{Binding WaitMessage}" Foreground="White" MaxWidth="200" TextWrapping="Wrap"
+    TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+  </Grid>
+ </Grid>
+</UserControl>
+
+

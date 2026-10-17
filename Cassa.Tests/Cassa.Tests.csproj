@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <PublishAot>false</PublishAot><PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Cassa/Cassa.csproj" /><ProjectReference Include="../Servizi/Servizi.csproj" />
+    <ProjectReference Include="../DatabaseHost/DatabaseHost.csproj" />
+    <ProjectReference Include="../Menu/Menu.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
+    <PackageReference Include="Avalonia.Headless" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Skia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+  </ItemGroup>
+<ItemGroup><ProjectReference Include="../Report/Report.csproj" /></ItemGroup></Project>

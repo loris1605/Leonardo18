@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ViewModels" xmlns:ui="using:ControlStyles"
+             x:Class="Views.ConnectionView" x:DataType="vm:ConnectionViewModel"
+             Background="LightSteelBlue" KeyboardNavigation.TabNavigation="Cycle">
+  <Grid Margin="24">
+    <ui:PopupBorder IsVisible="{Binding !IsBusy}" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="680" Padding="24">
+      <StackPanel Spacing="16">
+        <ui:UiTitolo Text="CONNESSIONE AL DATABASE" SubTitolo="True" FontSize="22" HorizontalAlignment="Center" />
+        <Grid x:Name="InputGrid" ColumnDefinitions="160,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" IsEnabled="{Binding IsUiReady}">
+          <ui:UiLabelForGrid Text="SERVER:" Grid.Row="0" />
+          <ui:UiTextBox Margin="0,4" x:Name="ServerTextBox" 
+                        Grid.Column="1" MinWidth="280" Text="{Binding SelectedInstance, Mode=TwoWay}" />
+          <ui:UiComboBox x:Name="SqlCombo" SelectionChanged="OnServerSelected" 
+                    Grid.Row="1" Grid.Column="1" Margin="0,6,0,10" 
+                    ItemsSource="{Binding SqlInstances}" PlaceholderText="Server trovati nella rete" />
+          <ui:UiLabelForGrid Grid.Row="2" Text="NOME UTENTE:" />
+          <ui:UiTextBox Margin="0,4" x:Name="UserNameText" Grid.Row="2" Grid.Column="1" Text="{Binding UserIdText, Mode=TwoWay}" />
+          <ui:UiLabelForGrid Grid.Row="3" Text="PASSWORD:" />
+          <ui:UiTextBox Margin="0,4" x:Name="PasswordTextBox" Grid.Row="3" Grid.Column="1" PasswordChar="●" Text="{Binding PasswordText, Mode=TwoWay}" />
+          <ui:UiLabelForGrid Grid.Row="4" Text="DATABASE:" />
+          <ui:UiTextBox Margin="0,4" x:Name="DatabaseTextBox" Grid.Row="4" Grid.Column="1" Text="{Binding DatabaseText, Mode=TwoWay}" />
+        </Grid>
+        <TextBlock Text="{Binding ErrorText}" TextWrapping="Wrap" MaxWidth="560" Foreground="White" HorizontalAlignment="Center" />
+        <WrapPanel HorizontalAlignment="Center">
+          <ui:UiButton Height="40" MinWidth="85" Padding="12,6" FontSize="14" Content="CERCA" Command="{Binding LoadCommand}" Margin="6" ToolTipText="Cerca server SQL" />
+          <ui:UiButton Height="40" MinWidth="85" Padding="12,6" FontSize="14" Content="VERIFICA" Command="{Binding CheckCommand}" Margin="6" />
+          <ui:UiButton Height="40" MinWidth="85" Padding="12,6" FontSize="14" Content="CREA / AGGIORNA (F5)" Command="{Binding F5Command}" Margin="6" />
+          <ui:UiButton Height="40" MinWidth="85" Padding="12,6" FontSize="14" Content="AVVIA" Command="{Binding AvviaCommand}" Margin="6" />
+        </WrapPanel>
+      </StackPanel>
+    </ui:PopupBorder>
+    <Grid HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          IsVisible="{Binding IsBusy}"
+          IsHitTestVisible="False"
+          ZIndex="1">
+      <ui:UiWaitIndicator x:Name="ConnectionWaitIndicator"
+                          IsActive="{Binding IsBusy}"
+                          Diameter="264"
+                          RotationSpeed="1.2"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center" />
+      <TextBlock Text="{Binding WaitMessage}" MaxWidth="200" TextWrapping="Wrap"
+                 Foreground="White"
+                 FontSize="16"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 TextAlignment="Center"
+                 ZIndex="1" />
+    </Grid>
+  </Grid>
+</UserControl>

@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="using:ControlStyles" xmlns:vm="using:Cassa.ViewModels" xmlns:db="using:AppServices.Database" x:Class="Cassa.Views.AcquistoAbbonamentoView" x:DataType="vm:CassaViewModel">
+ <Grid RowDefinitions="Auto,*,Auto" RowSpacing="14">
+  <TextBlock Text="ACQUISTO ABBONAMENTO" FontSize="20" FontWeight="Bold" Foreground="White"/>
+  <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="18" IsVisible="{Binding CanEditAbbonamento}">
+   <StackPanel Spacing="12">
+    <TextBlock Text="1. SCEGLI L'ABBONAMENTO" FontWeight="Bold" Foreground="White"/>
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+    <ComboBox ItemsSource="{Binding TipiAbbonamento}" SelectedItem="{Binding TipoAbbonamentoSelezionato,Mode=TwoWay}" HorizontalAlignment="Stretch">
+     <ComboBox.ItemTemplate><DataTemplate x:DataType="db:CassaTipoAbbonamento"><TextBlock Text="{Binding Label}"/></DataTemplate></ComboBox.ItemTemplate>
+    </ComboBox>
+    <ui:UiIconButton Grid.Column="1" XLabel="AGGIORNA" IconSymbol="ArrowSync" IconVariant="Color" Command="{Binding AggiornaTipiAbbonamentoCommand}" Padding="8,5"/>
+    </Grid>
+    <Border Background="#F4F7FA" CornerRadius="8" Padding="14"><TextBlock Text="{Binding RiepilogoTipoAbbonamento}" FontSize="18" TextWrapping="Wrap"/></Border>
+    <TextBlock Text="Il prezzo è riferito all'intero abbonamento, anche con due soci." Foreground="White" TextWrapping="Wrap"/>
+    <TextBlock Text="REGISTRAZIONE ACQUISTO" FontWeight="Bold" Foreground="White"/>
+    <CheckBox Content="PAGATO" Foreground="White" IsChecked="{Binding AbbonamentoPagato,Mode=TwoWay}"/>
+    <TextBlock Text="Se non selezionato, il credito resta in Sospesi. Ricavo e incasso vengono registrati al saldo." Foreground="White" TextWrapping="Wrap" FontSize="12"/>
+    <TextBlock Text="NOTE" Foreground="White"/><ui:UiTextBox Text="{Binding NoteAbbonamento,Mode=TwoWay}" MaxLength="50"/>
+  <Border x:Name="PurchaseErrorPanel" IsVisible="{Binding HasErroreAcquisto}" Background="#FDE8E7" BorderBrush="#B42318" BorderThickness="1" CornerRadius="8" Padding="8">
+   <StackPanel Spacing="4"><TextBlock Text="ACQUISTO NON REGISTRATO" Foreground="#B42318" FontWeight="Bold"/><TextBlock Text="{Binding ErroreAcquisto}" Foreground="#7A271A" TextWrapping="Wrap" FontSize="12" MaxLines="2" ToolTip.Tip="{Binding ErroreAcquisto}"/></StackPanel>
+  </Border>
+   </StackPanel>
+   <StackPanel Grid.Column="1" Spacing="10">
+    <TextBlock Text="2. ASSOCIA LE TESSERE" FontWeight="Bold" Foreground="White"/>
+    <TextBlock Text="PRIMO SOCIO" Foreground="White"/>
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+     <ui:UiTextBox x:Name="FirstCardBox" Text="{Binding TesseraAbbonamento1,Mode=TwoWay}" MaxLength="20" MoveToNextOnEnter="False" AutomationProperties.Name="Tessera primo socio"/>
+     <ui:UiIconButton Grid.Column="1" XLabel="IDENTIFICA" IconSymbol="Search" IconVariant="Filled" Command="{Binding IdentificaTesseraAbbonamentoCommand}" CommandParameter="1" Padding="10,7"/>
+    </Grid>
+    <Border Background="#F4F7FA" CornerRadius="8" Padding="10" IsVisible="{Binding HasAbbonamentoSocio1}"><StackPanel Spacing="4"><TextBlock Text="{Binding AbbonamentoSocio1.AvvisoSospesi}" Foreground="#9A3412" FontWeight="Bold" IsVisible="{Binding AbbonamentoSocio1.HasSospesi}"/><TextBlock Text="{Binding AbbonamentoSocio1.Anagrafica}" FontSize="18" FontWeight="Bold" TextWrapping="Wrap"/><TextBlock Text="{Binding AbbonamentoSocio1.NumeroTessera,StringFormat='Tessera: {0}'}"/><TextBlock Text="{Binding AbbonamentoSocio1.Scadenza,StringFormat='Scadenza tessera: {0}'}"/></StackPanel></Border>
+    <CheckBox Content="ASSOCIA ANCHE UN SECONDO SOCIO" Foreground="White" IsChecked="{Binding SecondoSocioAbbonamento,Mode=TwoWay}"/>
+    <StackPanel Spacing="8" IsVisible="{Binding SecondoSocioAbbonamento}">
+     <TextBlock Text="SECONDO SOCIO" Foreground="White"/>
+     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8"><ui:UiTextBox x:Name="SecondCardBox" Text="{Binding TesseraAbbonamento2,Mode=TwoWay}" MaxLength="20" MoveToNextOnEnter="False" AutomationProperties.Name="Tessera secondo socio"/><ui:UiIconButton Grid.Column="1" XLabel="IDENTIFICA" IconSymbol="Search" IconVariant="Filled" Command="{Binding IdentificaTesseraAbbonamentoCommand}" CommandParameter="2" Padding="10,7"/></Grid>
+     <Border Background="#F4F7FA" CornerRadius="8" Padding="10" IsVisible="{Binding HasAbbonamentoSocio2}"><StackPanel Spacing="4"><TextBlock Text="{Binding AbbonamentoSocio2.AvvisoSospesi}" Foreground="#9A3412" FontWeight="Bold" IsVisible="{Binding AbbonamentoSocio2.HasSospesi}"/><TextBlock Text="{Binding AbbonamentoSocio2.Anagrafica}" FontSize="18" FontWeight="Bold" TextWrapping="Wrap"/><TextBlock Text="{Binding AbbonamentoSocio2.NumeroTessera,StringFormat='Tessera: {0}'}"/><TextBlock Text="{Binding AbbonamentoSocio2.Scadenza,StringFormat='Scadenza tessera: {0}'}"/></StackPanel></Border>
+    </StackPanel>
+    <TextBlock Text="{Binding AbbonamentoWarning}" Foreground="White" TextWrapping="Wrap"/>
+   </StackPanel>
+  </Grid>
+  <Border Grid.Row="1" Background="#F4F7FA" CornerRadius="8" Padding="20" VerticalAlignment="Top" IsVisible="{Binding HasAcquistoAbbonamento}"><StackPanel Spacing="14"><TextBlock Text="ACQUISTO REGISTRATO" FontSize="20" FontWeight="Bold"/><TextBlock Text="{Binding AcquistoAbbonamento.Riepilogo}" FontSize="18" TextWrapping="Wrap"/><TextBlock Text="{Binding AcquistoAbbonamento.Socio1,StringFormat='Primo socio: {0}'}"/><TextBlock Text="{Binding AcquistoAbbonamento.NumeroTessera1,StringFormat='Tessera: {0}'}"/><TextBlock IsVisible="{Binding AcquistoAbbonamento.HasSecondoSocio}" Text="{Binding AcquistoAbbonamento.Socio2,StringFormat='Secondo socio: {0}'}"/><TextBlock IsVisible="{Binding AcquistoAbbonamento.HasSecondoSocio}" Text="{Binding AcquistoAbbonamento.NumeroTessera2,StringFormat='Tessera: {0}'}"/></StackPanel></Border>
+
+  <WrapPanel Grid.Row="2">
+   <ui:UiIconButton XLabel="CONFERMA ACQUISTO" IconSymbol="Save" IconVariant="Filled" Command="{Binding ConfermaAbbonamentoCommand}" IsVisible="{Binding CanEditAbbonamento}" Padding="12,8" Margin="0,0,10,0"/>
+   <ui:UiIconButton XLabel="NUOVO ACQUISTO" IconSymbol="AddCircle" IconVariant="Color" Command="{Binding AcquistaAbbonamentoCommand}" IsVisible="{Binding HasAcquistoAbbonamento}" Padding="12,8" Margin="0,0,10,0"/>
+   <ui:UiIconButton XLabel="TORNA ALLA POSTAZIONE" IconSymbol="BuildingStore" IconVariant="Color" Command="{Binding BackCommand}" Padding="12,8"/>
+  </WrapPanel>
+ </Grid>
+</UserControl>

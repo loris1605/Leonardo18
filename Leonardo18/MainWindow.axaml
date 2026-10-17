@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ViewModels" xmlns:views="using:Leonardo18.Views"
+        x:Class="Leonardo18.MainWindow" x:DataType="vm:MainWindowViewModel" x:CompileBindings="True"
+        Width="900" Height="650" MinWidth="720" MinHeight="540"
+        Title="Leonardo18">
+    <views:MainRouterHost x:Name="ModuleHost" Router="{Binding Router}"
+                          IsEnabled="{Binding !IsLoading}">
+        <views:MainRouterHost.PageTransition>
+            <CrossFade Duration="0:0:0.5" />
+        </views:MainRouterHost.PageTransition>
+        <views:MainRouterHost.DefaultContent>
+            <Border />
+        </views:MainRouterHost.DefaultContent>
+    </views:MainRouterHost>
+</Window>

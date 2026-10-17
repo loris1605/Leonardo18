@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ui="using:ControlStyles" xmlns:vm="using:Configurazione.ViewModels" xmlns:db="using:AppServices.Database"
+ x:Class="Configurazione.Views.ConfigurazioneInputView" x:DataType="vm:ConfigurazioneInputViewModel">
+ <Grid MinHeight="340">
+  <StackPanel Spacing="12" IsVisible="{Binding !IsBusy}">
+   <TextBlock Text="{Binding Title}" Foreground="White" FontWeight="Bold" FontSize="18"/>
+   <StackPanel Spacing="8" IsEnabled="{Binding FieldsEnabled}">
+    <TextBlock Text="NOME" Foreground="White"/>
+    <ui:UiTextBox x:Name="NomeText" Text="{Binding Nome,Mode=TwoWay}" MaxLength="{Binding NameMaxLength}"/>
+    <StackPanel IsVisible="{Binding HasPassword}" Spacing="8">
+     <TextBlock Text="PASSWORD" Foreground="White"/>
+     <ui:UiTextBox Text="{Binding Password,Mode=TwoWay}" PasswordChar="●" MaxLength="128" PlaceholderText="{Binding PasswordHint}"/>
+    </StackPanel>
+    <StackPanel IsVisible="{Binding IsOperatore}" Spacing="8">
+     <TextBlock Text="BADGE" Foreground="White"/>
+     <ui:UiIntegerTextBox Text="{Binding BadgeText,Mode=TwoWay}" MaxLength="10"/>
+     <CheckBox Content="Abilitato" Foreground="White" IsChecked="{Binding Abilitato,Mode=TwoWay}"/>
+    </StackPanel>
+    <StackPanel IsVisible="{Binding HasEtichetta}" Spacing="8">
+     <TextBlock Text="ETICHETTA" Foreground="White"/>
+     <ui:UiTextBox Text="{Binding Etichetta,Mode=TwoWay}" MaxLength="25"/>
+    </StackPanel>
+    <StackPanel IsVisible="{Binding HasTipo}" Spacing="8">
+     <TextBlock Text="TIPO" Foreground="White"/>
+     <ui:UiComboBox ItemsSource="{Binding Tipi}" SelectedItem="{Binding SelectedTipo,Mode=TwoWay}">
+      <ui:UiComboBox.ItemTemplate><DataTemplate x:DataType="db:ConfigurazioneOption"><TextBlock Text="{Binding Nome}"/></DataTemplate></ui:UiComboBox.ItemTemplate>
+     </ui:UiComboBox>
+    </StackPanel>
+    <StackPanel IsVisible="{Binding IsPostazione}" Spacing="8">
+     <TextBlock Text="TIPO DI RIENTRO" Foreground="White"/>
+     <ui:UiComboBox ItemsSource="{Binding Rientri}" SelectedItem="{Binding SelectedRientro,Mode=TwoWay}">
+      <ui:UiComboBox.ItemTemplate><DataTemplate x:DataType="db:ConfigurazioneOption"><TextBlock Text="{Binding Nome}"/></DataTemplate></ui:UiComboBox.ItemTemplate>
+     </ui:UiComboBox>
+    </StackPanel>
+    <StackPanel IsVisible="{Binding IsTariffa}" Spacing="8">
+     <TextBlock Text="PREZZO (€)" Foreground="White"/>
+     <ui:UiDecimalTextBox Text="{Binding PrezzoText,Mode=TwoWay}"/>
+     <CheckBox Content="Free drink" Foreground="White" IsChecked="{Binding FreeDrink,Mode=TwoWay}"/>
+    </StackPanel>
+    <StackPanel IsVisible="{Binding IsRientro}" Spacing="8">
+     <TextBlock Text="DURATA (ORE)" Foreground="White"/>
+     <ui:UiIntegerTextBox Text="{Binding DurataText,Mode=TwoWay}" MaxLength="10"/>
+    </StackPanel>
+   </StackPanel>
+   <TextBlock Text="{Binding InfoLabel}" Foreground="White" TextWrapping="Wrap"/>
+   <WrapPanel HorizontalAlignment="Center">
+    <ui:UiIconButton Padding="10,7" XLabel="{Binding SaveText}" Command="{Binding SaveCommand}" Margin="0,0,8,6" IconSymbol="{Binding SaveIcon}" IconVariant="Filled"/>
+    <ui:UiIconButton Padding="10,7" XLabel="ANNULLA" Command="{Binding CancelCommand}" Margin="0,0,0,6" IconSymbol="DismissCircle" IconVariant="Color"/>
+   </WrapPanel>
+  </StackPanel>
+  <Grid IsVisible="{Binding IsBusy}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+   <ui:UiWaitIndicator Diameter="264" IsActive="{Binding IsBusy}" RotationSpeed="1.2"/>
+   <TextBlock Text="{Binding WaitMessage}" Foreground="White" MaxWidth="200" TextWrapping="Wrap"
+    TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+  </Grid>
+ </Grid>
+</UserControl>
+
+

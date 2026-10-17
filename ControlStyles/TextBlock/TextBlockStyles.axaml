@@ -1,0 +1,47 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:local="clr-namespace:ControlStyles">
+
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <local:UiTitolo Text="Titolo di esempio" />
+    </Border>
+  </Design.PreviewWith>
+
+  <Style Selector="local|UiTitolo">
+    <Setter Property="FontFamily" Value="Arial" />
+    <Setter Property="FontSize" Value="24" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Orientation="Vertical">
+          <Border BoxShadow="0 4 12 0 rgba(255,255,255,0.9)">
+            <TextBlock Text="{TemplateBinding Text}"
+                       FontFamily="{TemplateBinding FontFamily}"
+                       FontSize="{TemplateBinding FontSize}"
+                       Foreground="{TemplateBinding Foreground}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextAlignment="Center" />
+          </Border>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="local|UiTitolo:subtitle">
+    <Setter Property="FontFamily" Value="Verdana" />
+    <Setter Property="FontSize" Value="20" />
+    <Setter Property="Foreground" Value="Yellow" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="local|UiLabelForGrid">
+    <Setter Property="FontFamily" Value="Verdana" />
+    <Setter Property="FontSize" Value="18" />
+  </Style>
+
+</Styles>

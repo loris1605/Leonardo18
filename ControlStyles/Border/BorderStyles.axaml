@@ -1,0 +1,110 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ControlStyles">
+
+    <Styles.Resources>
+        <LinearGradientBrush x:Key="PopupGlassBackground"
+                             StartPoint="0%,0%"
+                             EndPoint="100%,100%">
+        
+            <GradientStop Offset="0" Color="#88718398"/>
+            <GradientStop Offset="0.50" Color="#885A6D82"/>
+            <GradientStop Offset="1" Color="#88415468"/>
+
+        </LinearGradientBrush>
+        
+        <LinearGradientBrush x:Key="PopupGlassBorder"
+                             StartPoint="0%,0%"
+                             EndPoint="100%,100%">
+        
+            <GradientStop Offset="0"
+                          Color="#E8FFFFFF"/>
+        
+            <GradientStop Offset="0.45"
+                          Color="#909FB5C7"/>
+        
+            <GradientStop Offset="1"
+                          Color="#507087A0"/>
+        </LinearGradientBrush>
+
+    </Styles.Resources>
+
+    <Design.PreviewWith>
+        <Border Width="600"
+                Height="400"
+                Padding="50"
+                Background="#26384A">
+
+            <local:PopupBorder Width="430">
+                <Grid RowDefinitions="Auto,Auto,Auto">
+                    <TextBlock Margin="24,22,24,8"
+                               Text="Leonardo Net"
+                               FontSize="23"
+                               FontWeight="SemiBold"
+                               Foreground="White"/>
+
+                    <TextBlock Grid.Row="1"
+                               Margin="24,0,24,20"
+                               Text="Accesso al sistema"
+                               FontSize="14"
+                               Foreground="#AFC4D6"/>
+
+                    <Border Grid.Row="2"
+                            Height="100"
+                            Margin="24,0,24,24"
+                            CornerRadius="10"
+                            Background="#20FFFFFF"/>
+                </Grid>
+            </local:PopupBorder>
+        </Border>
+    </Design.PreviewWith>
+
+
+
+    <Style Selector="local|PopupBorder">
+        <Setter Property="Background"
+                Value="{DynamicResource PopupGlassBackground}"/>
+    
+        <Setter Property="BorderBrush"
+                Value="#70FFFFFF"/>
+    
+        <Setter Property="BorderThickness"
+                Value="1"/>
+    
+        <Setter Property="CornerRadius"
+                Value="18"/>
+    
+        <Setter Property="BoxShadow"
+                Value="0 20 45 0 #60000000,
+                       0 5 14 0 #40000000,
+                       inset 0 1 0 0 #50FFFFFF"/>
+    </Style>
+
+    <Style Selector="local|PopupBorder local|UiLabelForGrid">
+        <Setter Property="Foreground" Value="#FFF8FAFC"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    
+    
+
+    <Style Selector="local|UiInfoBorder">
+        <Setter Property="Background"
+                Value="#EAF0F5"/>
+
+        <Setter Property="BorderBrush"
+                Value="#50738EA5"/>
+
+        <Setter Property="BorderThickness"
+                Value="1"/>
+
+        <Setter Property="CornerRadius"
+                Value="12"/>
+
+        <Setter Property="Margin"
+                Value="10"/>
+
+        <Setter Property="BoxShadow"
+                Value="0 8 20 0 #35000000"/>
+    </Style>
+
+</Styles>

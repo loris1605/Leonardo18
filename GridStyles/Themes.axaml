@@ -1,0 +1,4 @@
+<Styles xmlns="https://github.com/avaloniaui">
+  <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+  <StyleInclude Source="avares://GridStyles/DataGridStyles.axaml" />
+</Styles>

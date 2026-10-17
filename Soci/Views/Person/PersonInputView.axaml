@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ui="using:ControlStyles" xmlns:vm="using:Soci.ViewModels"
+ x:Class="Soci.Views.PersonInputView" x:DataType="vm:SociInputBase">
+ <StackPanel Spacing="12">
+  <ui:UiTitolo Text="{Binding Titolo}" SubTitolo="True" FontSize="19" HorizontalAlignment="Center"/>
+  <TextBlock Text="{Binding ContextText}" Foreground="White" TextAlignment="Center" TextWrapping="Wrap"/>
+  <StackPanel Spacing="10" IsEnabled="{Binding FieldsEnabled}">
+   <Grid ColumnDefinitions="130,*" RowDefinitions="Auto,Auto,Auto" IsVisible="{Binding PersonFields}">
+    <ui:UiLabelForGrid FontSize="16" Text="COGNOME:"/>
+    <ui:UiTextBox x:Name="CognomeInput" Grid.Column="1" Text="{Binding Cognome, Mode=TwoWay}" MaxLength="50" Margin="0,4"/>
+    <ui:UiLabelForGrid FontSize="16" Grid.Row="1" Text="NOME:"/>
+    <ui:UiTextBox x:Name="NomeInput" Grid.Row="1" Grid.Column="1" Text="{Binding Nome, Mode=TwoWay}" MaxLength="50" Margin="0,4"/>
+    <ui:UiLabelForGrid FontSize="16" Grid.Row="2" Text="NATO IL:"/>
+    <DatePicker Grid.Row="2" Grid.Column="1" SelectedDate="{Binding DataNascitaOffSet, Mode=TwoWay}"
+      DayVisible="True" MonthVisible="True" YearVisible="True" Margin="0,4"/>
+   </Grid>
+   <Grid ColumnDefinitions="130,*" IsVisible="{Binding SocioFields}">
+    <ui:UiLabelForGrid FontSize="16" Text="COD. SOCIO:"/>
+    <ui:UiTextBox x:Name="NumeroSocioInput" Grid.Column="1" Text="{Binding NumeroSocio, Mode=TwoWay}" MaxLength="20"/>
+   </Grid>
+   <Grid ColumnDefinitions="130,*" RowDefinitions="Auto,Auto" IsVisible="{Binding CardFields}">
+    <ui:UiLabelForGrid FontSize="16" Text="TESSERA:"/>
+    <ui:UiTextBox x:Name="NumeroTesseraInput" Grid.Column="1" Text="{Binding NumeroTessera, Mode=TwoWay}" MaxLength="20" Margin="0,4"/>
+    <ui:UiLabelForGrid FontSize="16" Grid.Row="1" Text="SCADENZA:"/>
+    <DatePicker Grid.Row="1" Grid.Column="1" SelectedDate="{Binding ScadenzaOffSet, Mode=TwoWay}" Margin="0,4"/>
+   </Grid>
+  </StackPanel>
+  <TextBlock Text="{Binding DeleteText}" IsVisible="{Binding IsDelete}" Foreground="White" TextWrapping="Wrap" TextAlignment="Center"/>
+ </StackPanel>
+</UserControl>

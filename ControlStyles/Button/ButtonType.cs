@@ -1,0 +1,34 @@
+﻿namespace ControlStyles
+{
+    public enum ButtonType
+    {
+        Normal,
+        Adding,
+        Cancel,
+        Delete,
+        Save,
+        Update,
+        Exit,
+        Setting,
+        Credenziali,
+        Drink,
+        Euro,
+        Search,
+        Tabs,
+        Open,
+        AddSocio,
+        CheckOut,
+        Note,
+        UserBlock,
+        Abbonamento,
+        List,
+        Connection,
+        UserRemove,
+        Close,
+        Cestino,
+        PrimaNota,
+        Alias,
+        Print,
+        Database
+    }
+}

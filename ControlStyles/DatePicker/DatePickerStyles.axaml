@@ -1,0 +1,33 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ControlStyles">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <local:UiDatePicker/>
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- Add Styles Here -->
+
+  
+    <Style Selector="DatePicker.UiDatePickerStyle">
+        <Setter Property="Width" Value="NaN" /> <!-- NaN significa 'Auto' -->
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+
+        <!-- Forza il pulsante interno a occupare tutto lo spazio -->
+    <Style Selector="DatePicker.UiDatePickerStyle /template/ Button#FlyoutButton">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+        <!-- Rende flessibile la griglia interna che tiene Giorno/Mese/Anno -->
+    <Style Selector="DatePicker.UiDatePickerStyle /template/ Grid#PART_ButtonContentGrid">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+
+    <Style Selector="DatePicker.UiDatePickerStyle /template/ TextBlock">
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+</Styles>

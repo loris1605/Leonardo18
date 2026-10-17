@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ui="using:ControlStyles" xmlns:vm="using:Soci.ViewModels"
+ x:Class="Soci.Views.PersonSearchView" x:DataType="vm:PersonSearchViewModel">
+ <StackPanel Spacing="12">
+  <ui:UiTitolo Text="CERCA SOCIO" SubTitolo="True" FontSize="19" HorizontalAlignment="Center"/>
+  <ui:UiComboBox ItemsSource="{Binding SearchKinds}" SelectedItem="{Binding SearchKind, Mode=TwoWay}"/>
+  <StackPanel Spacing="8" IsVisible="{Binding AnagraficaChecked}">
+   <TextBlock Text="COGNOME" Foreground="White"/>
+   <ui:UiComboBox ItemsSource="{Binding TextModes}" SelectedIndex="{Binding CognomeSelectedValue, Mode=TwoWay}"/>
+   <ui:UiTextBox Text="{Binding Cognome, Mode=TwoWay}" MaxLength="50"/>
+   <TextBlock Text="NOME" Foreground="White"/>
+   <ui:UiComboBox ItemsSource="{Binding TextModes}" SelectedIndex="{Binding NomeSelectedValue, Mode=TwoWay}"/>
+   <ui:UiTextBox Text="{Binding Nome, Mode=TwoWay}" MaxLength="50"/>
+   <TextBlock Text="DATA DI NASCITA" Foreground="White"/>
+   <ui:UiComboBox ItemsSource="{Binding DateModes}" SelectedIndex="{Binding NatoilSelectedValue, Mode=TwoWay}"/>
+   <DatePicker SelectedDate="{Binding DataNascitaOffSet, Mode=TwoWay}"/>
+  </StackPanel>
+  <StackPanel Spacing="8" IsVisible="{Binding SocioChecked}">
+   <TextBlock Text="CODICE SOCIO" Foreground="White"/>
+   <ui:UiTextBox Text="{Binding NumeroSocio, Mode=TwoWay}" MaxLength="20"/>
+  </StackPanel>
+  <StackPanel Spacing="8" IsVisible="{Binding TesseraChecked}">
+   <TextBlock Text="NUMERO TESSERA" Foreground="White"/>
+   <ui:UiTextBox Text="{Binding NumeroTessera, Mode=TwoWay}" MaxLength="20"/>
+  </StackPanel>
+ </StackPanel>
+</UserControl>

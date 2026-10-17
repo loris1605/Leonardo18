@@ -1,0 +1,16 @@
+<Solution>
+  <Project Path="ControlStyles/ControlStyles.csproj" />
+  <Project Path="Leonardo18/Leonardo18.csproj" />
+  <Project Path="Soci/Soci.csproj" />
+  <Project Path="ViewModelService/ViewModelService.csproj" />
+  <Project Path="Menu/Menu.csproj" />
+  <Project Path="Models/Models.csproj" />
+  <Project Path="AppServices/AppServices.csproj" />
+  <Project Path="Connection/Connection.csproj" />
+  <Project Path="DatabaseHost/DatabaseHost.csproj" />
+  <Project Path="GridStyles/GridStyles.csproj" />
+  <Project Path="Login/Login.csproj" />
+  <Project Path="Configurazione/Configurazione.csproj" />
+  <Project Path="Cassa/Cassa.csproj" />
+  <Project Path="Servizi/Servizi.csproj" />
+  <Project Path="Report/Report.csproj" /></Solution>

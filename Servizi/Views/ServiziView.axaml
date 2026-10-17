@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="using:ControlStyles" xmlns:vm="using:Servizi.ViewModels" xmlns:d="using:AppServices.Database" x:Class="Servizi.Views.ServiziView" x:DataType="vm:ServiziViewModel" Background="LightSteelBlue">
+ <UserControl.KeyBindings><KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCommand}"/><KeyBinding Gesture="Escape" Command="{Binding EscPressedCommand}"/></UserControl.KeyBindings>
+ <Grid Margin="24">
+  <ui:PopupBorder MaxWidth="1400" Padding="20" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+   <Grid RowDefinitions="Auto,*,Auto" RowSpacing="16">
+    <Grid ColumnDefinitions="*,Auto"><ui:UiTitolo Text="Leonardo18 - SERVIZI" SubTitolo="True" FontSize="22" VerticalAlignment="Center"/><ui:UiIconButton Grid.Column="1" XLabel="TORNA AL MENU" IconSymbol="Home" IconVariant="Color" Command="{Binding MenuCommand}" IsEnabled="{Binding !HasEditor}" Padding="12,8"/></Grid>
+    <Grid Grid.Row="1" RowDefinitions="Auto,*" RowSpacing="12">
+     <WrapPanel IsEnabled="{Binding GroupEnabled}">
+      <ui:UiIconButton XLabel="ABBONAMENTI" IconSymbol="Clipboard" IconVariant="Color" Command="{Binding AbbonamentiSectionCommand}" Margin="0,0,10,6" Padding="10,7"/>
+      <ui:UiIconButton XLabel="FIDELITY" IconSymbol="Star" IconVariant="Color" Command="{Binding FidelitySectionCommand}" Margin="0,0,10,6" Padding="10,7"/>
+      <TextBlock Text="{Binding SectionTitle}" Foreground="White" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
+     </WrapPanel>
+     <Grid Grid.Row="1" x:Name="MainColumns" ColumnDefinitions="3*,2*" ColumnSpacing="18" RowSpacing="12">
+      <Grid x:Name="ListPanel" RowDefinitions="Auto,Auto,*" RowSpacing="10">
+       <WrapPanel IsEnabled="{Binding GroupEnabled}">
+        <ui:UiIconButton XLabel="NUOVO" IconSymbol="AddCircle" IconVariant="Color" Command="{Binding AddCommand}" Margin="0,0,8,6" Padding="10,7"/>
+        <ui:UiIconButton XLabel="MODIFICA" IconSymbol="Edit" IconVariant="Color" Command="{Binding UpdCommand}" Margin="0,0,8,6" Padding="10,7"/>
+        <ui:UiIconButton XLabel="ELIMINA" IconSymbol="Delete" IconVariant="Filled" Command="{Binding DelCommand}" Margin="0,0,8,6" Padding="10,7"/>
+       </WrapPanel>
+       <Grid Grid.Row="1" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="8" ColumnSpacing="8" IsEnabled="{Binding !HasEditor}">
+        <ui:UiTextBox Text="{Binding SearchText,Mode=TwoWay}" PlaceholderText="Cerca servizio..."/>
+        <ui:UiIconButton Grid.Column="1" XLabel="AGGIORNA" IconSymbol="ArrowSync" IconVariant="Color" Command="{Binding RefreshCommand}" Padding="8,5"/>
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="10"><TextBlock Text="ORDINA PER" Foreground="White" VerticalAlignment="Center"/><ComboBox ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SortBy,Mode=TwoWay}" MinWidth="150"/></StackPanel>
+       </Grid>
+       <Border Grid.Row="2" Background="#F4F7FA" CornerRadius="8" Padding="8">
+        <Grid RowDefinitions="Auto,*">
+         <Grid ColumnDefinitions="*,70,70,90,75" Margin="8,6,8,10"><TextBlock Text="NOME" FontWeight="Bold"/><TextBlock Grid.Column="1" Text="{Binding NumeroColumn}" FontSize="11" FontWeight="Bold"/><TextBlock Grid.Column="2" Text="GIORNI" FontSize="11" FontWeight="Bold"/><TextBlock Grid.Column="3" Text="{Binding PrezzoColumn}" FontSize="11" FontWeight="Bold"/><TextBlock Grid.Column="4" Text="STATO" FontSize="11" FontWeight="Bold"/></Grid>
+         <ListBox Grid.Row="1" x:Name="AbbonamentiList" ItemsSource="{Binding Records}" SelectedItem="{Binding Selected,Mode=TwoWay}" IsEnabled="{Binding GroupEnabled}" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+          <ListBox.Styles><Style Selector="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style></ListBox.Styles>
+          <ListBox.ItemTemplate><DataTemplate x:DataType="d:ServiziRecord"><Grid ColumnDefinitions="*,70,70,90,75" MinWidth="440" Margin="0,6"><StackPanel><TextBlock Text="{Binding Nome}" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding Premio}" FontSize="11" IsVisible="{Binding $parent[UserControl].((vm:ServiziViewModel)DataContext).IsFidelity}"/></StackPanel><TextBlock Grid.Column="1" Text="{Binding NumeroIngressi}"/><TextBlock Grid.Column="2" Text="{Binding DurataGiorni}"/><TextBlock Grid.Column="3" Text="{Binding Prezzo,StringFormat={}{0:0.00}}"/><TextBlock Grid.Column="4" Text="{Binding Stato}"/></Grid></DataTemplate></ListBox.ItemTemplate>
+         </ListBox>
+        </Grid>
+       </Border>
+      </Grid>
+      <Border x:Name="EditorPanel" Grid.Column="1" IsVisible="{Binding HasEditor}" Background="#F4F7FA" CornerRadius="8" Padding="16" VerticalAlignment="Top">
+       <StackPanel Spacing="12" IsEnabled="{Binding !IsBusy}">
+        <TextBlock Text="{Binding EditorTitle}" FontSize="17" FontWeight="Bold"/>
+        <StackPanel Spacing="10" IsEnabled="{Binding IsEditable}">
+         <TextBlock Text="{Binding NomeLabel}"/><ui:UiTextBox x:Name="NomeInput" Text="{Binding Nome,Mode=TwoWay}" MaxLength="25"/>
+         <Grid ColumnDefinitions="*,*" ColumnSpacing="12"><StackPanel Spacing="6"><TextBlock Text="{Binding NumeroLabel}"/><NumericUpDown Value="{Binding NumeroIngressi,Mode=TwoWay}" Minimum="0" Maximum="2147483647" Increment="1" FormatString="0"/></StackPanel><StackPanel Grid.Column="1" Spacing="6"><TextBlock Text="DURATA (GIORNI)"/><NumericUpDown Value="{Binding DurataGiorni,Mode=TwoWay}" Minimum="0" Maximum="2147483647" Increment="1" FormatString="0"/></StackPanel></Grid>
+         <StackPanel IsVisible="{Binding IsFidelity}" Spacing="6"><TextBlock Text="PREMIO AL TRAGUARDO"/><ComboBox ItemsSource="{Binding PremioOptions}" SelectedItem="{Binding SelectedPremio,Mode=TwoWay}" HorizontalAlignment="Stretch"/>
+          <TextBlock Text="Un timbro per ingresso, rientri esclusi. Durata 0: senza scadenza." FontSize="11" TextWrapping="Wrap"/></StackPanel>
+         <TextBlock Text="{Binding PrezzoLabel}" IsVisible="{Binding ShowPrice}"/><NumericUpDown IsVisible="{Binding ShowPrice}" Value="{Binding Prezzo,Mode=TwoWay}" Minimum="0" Maximum="9999999999999999.99" Increment="0.50" FormatString="0.00"/>
+         <CheckBox Content="ATTIVO" IsChecked="{Binding Attivo,Mode=TwoWay}"/>
+        </StackPanel>
+        <WrapPanel><ui:UiIconButton XLabel="{Binding SaveButtonText}" IconSymbol="{Binding SaveIcon}" IconVariant="Filled" Command="{Binding SaveCommand}" Padding="12,8" Margin="0,0,8,6"/><ui:UiIconButton XLabel="ANNULLA" IconSymbol="DismissCircle" IconVariant="Color" Command="{Binding CancelCommand}" Padding="12,8" Margin="0,0,0,6"/></WrapPanel>
+       </StackPanel>
+      </Border>
+     </Grid>
+    </Grid>
+    <TextBlock Grid.Row="2" Text="{Binding InfoLabel}" Foreground="White" TextWrapping="Wrap"/>
+   </Grid>
+  </ui:PopupBorder>
+  <Border IsVisible="{Binding IsBusy}" Background="#AA324860" CornerRadius="12"><ui:UiWaitIndicator Diameter="180" IsActive="{Binding IsBusy}" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+ </Grid>
+</UserControl>

@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ui="using:ControlStyles" xmlns:vm="using:Configurazione.ViewModels" xmlns:views="using:Configurazione.Views"
+ xmlns:db="using:AppServices.Database" x:Class="Configurazione.Views.ConfigurazioneView" x:DataType="vm:ConfigurazioneViewModel"
+ Background="LightSteelBlue" KeyboardNavigation.TabNavigation="Cycle">
+ <Grid Margin="24">
+  <ui:PopupBorder Padding="20" MaxWidth="1400" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="14">
+     <Grid ColumnDefinitions="*,Auto">
+      <ui:UiTitolo Text="Leonardo18 - CONFIGURAZIONE" SubTitolo="True" FontSize="22" VerticalAlignment="Center"/>
+      <ui:UiIconButton Grid.Column="1" XLabel="TORNA AL MENU" Command="{Binding MenuCommand}" Padding="12,8" IconSymbol="Home" IconVariant="Color"/>
+     </Grid>
+     <WrapPanel IsEnabled="{Binding GroupEnabled}">
+      <ui:UiIconButton Padding="10,7" XLabel="OPERATORI" Command="{Binding SectionCommand}" CommandParameter="{x:Static db:ConfigurazioneSection.Operatori}" Margin="0,0,8,6" IconSymbol="PeopleTeam" IconVariant="Color"/>
+      <ui:UiIconButton Padding="10,7" XLabel="POSTAZIONI" Command="{Binding SectionCommand}" CommandParameter="{x:Static db:ConfigurazioneSection.Postazioni}" Margin="0,0,8,6" IconSymbol="BuildingStore" IconVariant="Color"/>
+      <ui:UiIconButton Padding="10,7" XLabel="SETTORI" Command="{Binding SectionCommand}" CommandParameter="{x:Static db:ConfigurazioneSection.Settori}" Margin="0,0,8,6" IconSymbol="AppsList" IconVariant="Filled"/>
+      <ui:UiIconButton Padding="10,7" XLabel="TARIFFE" Command="{Binding SectionCommand}" CommandParameter="{x:Static db:ConfigurazioneSection.Tariffe}" Margin="0,0,8,6" IconSymbol="Tag" IconVariant="Filled"/>
+      <ui:UiIconButton Padding="10,7" XLabel="RIENTRI" Command="{Binding SectionCommand}" CommandParameter="{x:Static db:ConfigurazioneSection.Rientri}" Margin="0,0,8,6" IconSymbol="ArrowClockwise" IconVariant="Filled"/>
+     </WrapPanel>
+     <Grid x:Name="MainColumns" ColumnDefinitions="3*,2*" ColumnSpacing="18" RowSpacing="18">
+      <views:ConfigurazioneRouterHost x:Name="GroupHost" Router="{Binding GroupRouter}"
+         IsEnabled="{Binding GroupEnabled}" IsVisible="{Binding IsGroupVisible}"/>
+      <views:ConfigurazioneRouterHost x:Name="InputHost" Grid.Column="1" Router="{Binding InputRouter}" IsVisible="{Binding HasEditor}"/>
+     </Grid>
+    </StackPanel>
+   </ScrollViewer>
+  </ui:PopupBorder>
+ </Grid>
+</UserControl>
+

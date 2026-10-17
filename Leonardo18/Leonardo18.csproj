@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Leonardo18</RootNamespace>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+	<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+	<PublishAot>true</PublishAot>
+    <IlcTreatWarningsAsErrors>true</IlcTreatWarningsAsErrors>
+    <ILLinkTreatWarningsAsErrors>true</ILLinkTreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="ReactiveUI.Avalonia" Version="12.1.4" />
+    <PackageReference Include="ReactiveUI.SourceGenerators" Version="4.2.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ControlStyles\ControlStyles.csproj" />
+    <ProjectReference Include="..\ViewModelService\ViewModelService.csproj" />
+  </ItemGroup>
+  <ItemGroup><ProjectReference Include="..\Connection\Connection.csproj" /></ItemGroup>
+  <!-- EF migrations execute in a managed local host; the desktop remains NativeAOT. -->
+  <Target Name="BuildDatabaseHost" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="../DatabaseHost/DatabaseHost.csproj" Targets="Restore;Build" BuildInParallel="false"
+             Properties="Configuration=$(Configuration);PublishAot=false;PublishTrimmed=false;SelfContained=false"
+             RemoveProperties="RuntimeIdentifier;PublishDir;PublishSingleFile;OutputPath;IntermediateOutputPath" />
+    <ItemGroup><DatabaseHostBuildFiles Include="../DatabaseHost/bin/$(Configuration)/net10.0/**/*" /></ItemGroup>
+    <Copy SourceFiles="@(DatabaseHostBuildFiles)" DestinationFiles="@(DatabaseHostBuildFiles->'$(TargetDir)DatabaseHost/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="PublishDatabaseHost" AfterTargets="Publish" Condition="'$(RuntimeIdentifier)' != ''">
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Command="dotnet publish &quot;../DatabaseHost/DatabaseHost.csproj&quot; -c &quot;$(Configuration)&quot; -r &quot;$(RuntimeIdentifier)&quot; --self-contained true -p:PublishAot=false -p:PublishTrimmed=false -o &quot;$(MSBuildProjectDirectory)/../artifacts/databasehost/$(RuntimeIdentifier)&quot; --nologo -m:1" />
+    <ItemGroup><DatabaseHostPublishFiles Include="../artifacts/databasehost/$(RuntimeIdentifier)/**/*" /></ItemGroup>
+    <Copy SourceFiles="@(DatabaseHostPublishFiles)" DestinationFiles="@(DatabaseHostPublishFiles->'$(PublishDir)DatabaseHost/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+<ItemGroup><ProjectReference Include="..\Login\Login.csproj" /></ItemGroup>
+<ItemGroup><ProjectReference Include="..\Menu\Menu.csproj" /></ItemGroup><ItemGroup><ProjectReference Include="..\Soci\Soci.csproj" /></ItemGroup><ItemGroup><ProjectReference Include="../Configurazione/Configurazione.csproj" /></ItemGroup><ItemGroup><ProjectReference Include="../Cassa/Cassa.csproj" /></ItemGroup>  <ItemGroup><ProjectReference Include="..\Servizi\Servizi.csproj" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../Report/Report.csproj" /></ItemGroup>
+  <Target Name="EnsureNativeAotPublication" BeforeTargets="PrepareForPublish">
+    <Error Condition="'$(PublishAot)' != 'true'" Text="Leonardo18 deve essere pubblicato con Native AOT. Non disabilitare PublishAot; DatabaseHost viene pubblicato separatamente come componente gestito." />
+  </Target>
+</Project>
+
+

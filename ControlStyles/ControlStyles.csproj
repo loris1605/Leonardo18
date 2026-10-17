@@ -1,0 +1,140 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	  <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+	  <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\AbbonamentoIcon.png" />
+    <None Remove="Resources\AddSocioIcon.png" />
+    <None Remove="Resources\AggiungiIcon.png" />
+    <None Remove="Resources\Alias.png" />
+    <None Remove="Resources\AnnullaIcon.png" />
+    <None Remove="Resources\CancellaIcon.png" />
+    <None Remove="Resources\CestinoIcon.png" />
+    <None Remove="Resources\CheckOutIcon.png" />
+    <None Remove="Resources\close.png" />
+    <None Remove="Resources\CloseIcon.png" />
+    <None Remove="Resources\ConnectionIcon.png" />
+    <None Remove="Resources\CredenzialiIcon.png" />
+    <None Remove="Resources\Database.png" />
+    <None Remove="Resources\DrinkIcon.png" />
+    <None Remove="Resources\EuroIcon.png" />
+    <None Remove="Resources\ExitIcon.png" />
+    <None Remove="Resources\ListIcon.png" />
+    <None Remove="Resources\ModificaIcon.png" />
+    <None Remove="Resources\NoteIcon.png" />
+    <None Remove="Resources\OkIcon.png" />
+    <None Remove="Resources\OpenIcon.png" />
+    <None Remove="Resources\PrimaNota.png" />
+    <None Remove="Resources\printer.png" />
+    <None Remove="Resources\SaveIcon.png" />
+    <None Remove="Resources\SearchIcon.png" />
+    <None Remove="Resources\SettingIcon.png" />
+    <None Remove="Resources\TabsIcon.png" />
+    <None Remove="Resources\UserBlockIcon.png" />
+    <None Remove="Resources\UserRemoveIcon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Resources\AbbonamentoIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\AddSocioIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\AggiungiIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\Alias.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\AnnullaIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\CancellaIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\CestinoIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\CheckOutIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\close.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\CloseIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\ConnectionIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\CredenzialiIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\Database.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\DrinkIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\EuroIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\ExitIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\ListIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\ModificaIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\NoteIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\OkIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\OpenIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\PrimaNota.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\printer.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\SaveIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\SearchIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\SettingIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\TabsIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\UserBlockIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\UserRemoveIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="FluentIcons.Avalonia" Version="2.1.344" />
+    <PackageReference Include="ReactiveUI.Avalonia" Version="12.1.4" />
+  </ItemGroup>
+
+<ItemGroup><AvaloniaXaml Remove="DataGrid\**\*.axaml" /></ItemGroup>
+</Project>

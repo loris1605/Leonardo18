@@ -1,0 +1,19 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Leonardo18.App"
+             RequestedThemeVariant="Light">
+    <Application.Styles>
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Light"
+                                       RegionColor="White"
+                                       Accent="LightBlue" />
+                <ColorPaletteResources x:Key="Dark"
+                                       RegionColor="Black"
+                                       Accent="Blue" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
+
+        <StyleInclude Source="avares://ControlStyles/Themes/MyStyles.axaml" />
+    </Application.Styles>
+</Application>

@@ -1,0 +1,63 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:local="clr-namespace:ControlStyles">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <local:UiMenu>
+        <local:UiMenuItem Header="Menu" />
+      </local:UiMenu>
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- Menu principale orizzontale. PART_ItemsPresenter è richiesto da ItemsControl. -->
+  <Style Selector="Menu.UiMenuStyle">
+    <Setter Property="Background" Value="White" />
+    <Setter Property="BorderBrush" Value="#E0E6ED" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Padding" Value="10,5" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Template">
+      <ControlTemplate TargetType="Menu">
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="8"
+                BoxShadow="0 2 10 0 #15000000"
+                Padding="{TemplateBinding Padding}">
+          <ItemsPresenter Name="PART_ItemsPresenter"
+                          ItemsPanel="{TemplateBinding ItemsPanel}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="MenuItem.UiMenuItemStyle">
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="Black" />
+    <Setter Property="Margin" Value="5" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Background" Value="LightSteelBlue" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.25" />
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <!-- Spaziatura e aspetto del popup del sottomenu nel template Fluent. -->
+  <Style Selector="MenuItem.UiMenuItemStyle /template/ Popup#PART_Popup">
+    <Setter Property="HorizontalOffset" Value="0" />
+    <Setter Property="VerticalOffset" Value="5" />
+  </Style>
+
+  <Style Selector="MenuItem.UiMenuItemStyle /template/ Popup#PART_Popup Border">
+    <Setter Property="Background" Value="LightGray" />
+    <Setter Property="BorderBrush" Value="#DCDFE3" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="5" />
+    <Setter Property="BoxShadow" Value="0 4 15 0 #20000000" />
+  </Style>
+</Styles>

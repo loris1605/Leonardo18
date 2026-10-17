@@ -1,0 +1,13 @@
+<Styles xmlns="https://github.com/avaloniaui">
+
+  <StyleInclude Source="avares://ControlStyles/Border/BorderStyles.axaml" />
+  <StyleInclude Source="avares://ControlStyles/Button/ButtonStyles.axaml" />
+  <StyleInclude Source="avares://ControlStyles/TextBlock/TextBlockStyles.axaml" />
+  <StyleInclude Source="avares://ControlStyles/ComboBox/ComboBoxStyles.axaml" />
+  <StyleInclude Source="avares://ControlStyles/TextBox/TextBoxStyles.axaml" />
+  <StyleInclude Source="avares://ControlStyles/Menu/MenuStyles.axaml" />
+  <StyleInclude Source="avares://ControlStyles/GroupBox/GroupBoxStyles.axaml" />
+  <StyleInclude Source="avares://ControlStyles/DatePicker/DatePickerStyles.axaml" />
+
+
+</Styles>

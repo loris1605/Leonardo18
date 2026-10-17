@@ -1,0 +1,38 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ControlStyles">
+
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <local:UiComboBox Width="260"/>
+    </Border>
+  </Design.PreviewWith>
+
+    
+  <!--
+    Personalizziamo i valori del controllo, ma lasciamo al tema Avalonia
+    il ControlTemplate standard: gestisce freccia, popup, focus e selezione.
+  -->
+  <Style Selector="local|UiComboBox">
+    <Setter Property="Theme" Value="{StaticResource {x:Type ComboBox}}" />
+    <Setter Property="Foreground" Value="#182535" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="FontFamily" Value="Verdana" />
+    <Setter Property="FontSize" Value="18" />
+    <Setter Property="Padding" Value="6,4" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Background" Value="#F4F7FA" />
+    <Setter Property="BorderBrush" Value="#8095A8B8" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+
+  <Style Selector="local|UiComboBox ComboBoxItem">
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="local|UiComboBox TextBlock">
+    <Setter Property="TextAlignment" Value="Center" />
+  </Style>
+</Styles>

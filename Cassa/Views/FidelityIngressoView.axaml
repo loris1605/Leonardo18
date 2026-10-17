@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Cassa.ViewModels" xmlns:db="using:AppServices.Database" xmlns:ui="using:ControlStyles" x:Class="Cassa.Views.FidelityIngressoView" x:DataType="vm:CassaViewModel">
+ <Border IsVisible="{Binding HasMember}" Background="#FFF7E5" BorderBrush="#D6B868" BorderThickness="2" CornerRadius="14" Padding="14">
+  <StackPanel Spacing="8">
+   <TextBlock Text="FIDELITY" Foreground="#7C570B" FontSize="13" FontWeight="Bold" LetterSpacing="2"/>
+   <StackPanel IsVisible="{Binding HasFidelity}" Spacing="6">
+    <TextBlock Text="{Binding Fidelity.Nome}" FontSize="18" FontWeight="Bold" Foreground="#5D430A"/>
+    <TextBlock Text="{Binding Fidelity.Progresso}" TextWrapping="Wrap"/>
+    <TextBlock Text="{Binding Fidelity.Premio}" TextWrapping="Wrap" FontWeight="Bold" Foreground="#166534"/>
+    <TextBlock Text="{Binding Fidelity.Scadenza}"/>
+    <ScrollViewer MaxHeight="190" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+     <ItemsControl ItemsSource="{Binding Fidelity.Timbri}">
+      <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+       <DataTemplate x:DataType="db:CassaTimbroFidelity">
+        <StackPanel Width="82" Margin="0,0,8,10" Spacing="4">
+         <Border Background="#F4D98B" BorderBrush="#B99136" BorderThickness="2" CornerRadius="28" Width="56" Height="56" HorizontalAlignment="Center">
+          <TextBlock Text="✓" FontSize="24" FontWeight="Bold" Foreground="#765208" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+         </Border>
+         <TextBlock Text="{Binding Data}" FontSize="11" TextAlignment="Center" TextWrapping="Wrap"/>
+        </StackPanel>
+       </DataTemplate>
+      </ItemsControl.ItemTemplate>
+     </ItemsControl>
+    </ScrollViewer>
+   </StackPanel>
+   <TextBlock Text="Nessuna Fidelity attiva." IsVisible="{Binding !HasFidelity}"/>
+   <StackPanel IsVisible="{Binding ShowActivateFidelity}" Spacing="6">
+    <ComboBox ItemsSource="{Binding TipiFidelity}" SelectedItem="{Binding SelectedTipoFidelity,Mode=TwoWay}" HorizontalAlignment="Stretch">
+     <ComboBox.ItemTemplate><DataTemplate x:DataType="db:CassaTipoFidelity"><TextBlock Text="{Binding Descrizione}" TextWrapping="Wrap"/></DataTemplate></ComboBox.ItemTemplate>
+    </ComboBox>
+    <ui:UiIconButton XLabel="ATTIVA FIDELITY" IconSymbol="AddCircle" IconVariant="Color" Command="{Binding AttivaFidelityCommand}" IsEnabled="{Binding CanActivateFidelity}" Padding="10,7" HorizontalAlignment="Left"/>
+   </StackPanel>
+   <ui:UiIconButton XLabel="INGRESSO FIDELITY" IconSymbol="PersonAdd" IconVariant="Color" Command="{Binding IngressoFidelityCommand}" IsVisible="{Binding ShowIngressoFidelity}" IsEnabled="{Binding CanIngressoFidelity}" Padding="10,7" HorizontalAlignment="Left"/>
+   <CheckBox Content="{Binding CreditoFidelityLabel}" IsChecked="{Binding UsaCreditoFidelity,Mode=TwoWay}" IsVisible="{Binding ShowCreditoFidelity}" IsEnabled="{Binding CanSelectIngresso}"/>
+  </StackPanel>
+ </Border>
+</UserControl>

@@ -1,0 +1,1 @@
+using Avalonia.Controls; namespace Cassa.Views; public partial class FidelityIngressoView:UserControl { public FidelityIngressoView(){InitializeComponent();} }

@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ui="using:ControlStyles" xmlns:vm="using:Menu.ViewModels" xmlns:map="using:Menu.ViewModels.Map"
+ x:Class="Menu.Views.MenuView" x:DataType="vm:MenuViewModel" Background="LightSteelBlue">
+ <Grid Margin="24">
+  <ui:PopupBorder HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="960"
+    Padding="24" IsVisible="{Binding !IsBusy}">
+   <StackPanel Spacing="18">
+    <ui:UiTitolo Text="Leonardo18 - MENU PRINCIPALE" SubTitolo="True" FontSize="22" HorizontalAlignment="Center"/>
+    <TextBlock Text="{Binding OperatoreName}" Foreground="White" TextAlignment="Center"/>
+    <StackPanel Spacing="12" IsVisible="{Binding IsMenuReady}">
+     <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center" IsVisible="{Binding AmministratoreVisible}">
+      <ui:UiIconButton XLabel="SOCI" IconSymbol="PeopleTeam" IconVariant="Color" AutomationProperties.Name="SOCI" Command="{Binding SociCommand}" Padding="18,10"/>
+      <ui:UiIconButton XLabel="CONFIGURAZIONE" IconSymbol="Settings" IconVariant="Color" AutomationProperties.Name="CONFIGURAZIONE" Command="{Binding ConfigurazioneCommand}" Padding="18,10"/>
+      <ui:UiIconButton XLabel="SERVIZI" IconSymbol="Briefcase" IconVariant="Color" AutomationProperties.Name="SERVIZI" Command="{Binding ServiziCommand}" Padding="18,10"/>
+     </StackPanel>
+     <StackPanel Spacing="10" IsVisible="{Binding CassaVisible}">
+      <TextBlock Text="POSTAZIONI DI CASSA" Foreground="White" TextAlignment="Center"/>
+      <ui:UiComboBox MinWidth="300" ItemsSource="{Binding CassaPostazioniDataSource}"
+        SelectedItem="{Binding SelectedPostazione, Mode=TwoWay}">
+       <ui:UiComboBox.ItemTemplate><DataTemplate x:DataType="map:MenuPostazioneMap">
+        <TextBlock Text="{Binding NomePostazione}"/>
+       </DataTemplate></ui:UiComboBox.ItemTemplate>
+      </ui:UiComboBox>
+      <ui:UiIconButton XLabel="APRI POSTAZIONE" IconSymbol="BuildingStore" IconVariant="Color" AutomationProperties.Name="APRI POSTAZIONE" Command="{Binding CassaPostazioneCommand}" HorizontalAlignment="Center" Padding="18,10"/>
+     </StackPanel>
+     <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
+      <ui:UiIconButton XLabel="APRI GIORNATA" IconSymbol="CalendarClock" IconVariant="Color" AutomationProperties.Name="APRI GIORNATA" Command="{Binding ApriGiornataCommand}" Padding="18,10"/>
+      <ui:UiIconButton XLabel="CHIUDI GIORNATA" IconSymbol="CalendarCheckmark" IconVariant="Color" AutomationProperties.Name="CHIUDI GIORNATA" Command="{Binding ChiudiGiornataCommand}" Padding="18,10"/>
+      <ui:UiIconButton XLabel="REPORT" IconSymbol="ChartMultiple" IconVariant="Color" AutomationProperties.Name="REPORT" Command="{Binding ReportCommand}" IsVisible="{Binding ReportVisible}" Padding="18,10"/>
+     </StackPanel>
+     <TextBlock Text="{Binding SessioneContabile}" Foreground="White" TextAlignment="Center"/>
+    </StackPanel>
+    <TextBlock Text="{Binding InfoError}" Foreground="White" MaxWidth="700" TextWrapping="Wrap" TextAlignment="Center"/>
+    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
+     <ui:UiIconButton XLabel="CONNESSIONE" IconSymbol="Database" IconVariant="Color" AutomationProperties.Name="CONNESSIONE" Command="{Binding ConnectionCommand}" Padding="18,10"/>
+     <ui:UiIconButton XLabel="CAMBIA OPERATORE" IconSymbol="PersonKey" IconVariant="Color" AutomationProperties.Name="CAMBIA OPERATORE" Command="{Binding LogoutCommand}" Padding="18,10"/>
+    </StackPanel>
+   </StackPanel>
+  </ui:PopupBorder>
+  <Grid HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsBusy}" IsHitTestVisible="False">
+   <ui:UiWaitIndicator Diameter="264" IsActive="{Binding IsBusy}" RotationSpeed="1.2"/>
+   <TextBlock Text="{Binding WaitMessage}" MaxWidth="200" TextWrapping="Wrap" TextAlignment="Center"
+    Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+  </Grid>
+ </Grid>
+</UserControl>

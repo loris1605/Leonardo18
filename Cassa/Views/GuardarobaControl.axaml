@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ui="using:ControlStyles" xmlns:vm="using:Cassa.ViewModels"
+ x:Class="Cassa.Views.GuardarobaControl" x:DataType="vm:CassaViewModel" IsEnabled="{Binding !IsGuardarobaBusy}">
+ <Border Background="#F4F7FA" CornerRadius="8" Padding="10">
+  <StackPanel Spacing="10">
+   <TextBlock Text="GUARDAROBA" FontWeight="Bold"/>
+   <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+    <TextBlock Text="Grb1" VerticalAlignment="Center"/>
+    <ui:UiIntegerTextBox Grid.Column="1" Text="{Binding Grb1, Mode=TwoWay}" MaxLength="10" Height="36" Padding="6"
+     AutomationProperties.Name="Grb1"/>
+    <TextBlock Grid.Row="1" Text="Grb2" VerticalAlignment="Center"/>
+    <ui:UiIntegerTextBox Grid.Row="1" Grid.Column="1" Text="{Binding Grb2, Mode=TwoWay}" MaxLength="10" Height="36" Padding="6"
+     AutomationProperties.Name="Grb2"/>
+    <TextBlock Grid.Row="2" Text="Grb3" VerticalAlignment="Center"/>
+    <ui:UiIntegerTextBox Grid.Row="2" Grid.Column="1" Text="{Binding Grb3, Mode=TwoWay}" MaxLength="10" Height="36" Padding="6"
+     AutomationProperties.Name="Grb3"/>
+    <TextBlock Grid.Row="3" Text="Grb4" VerticalAlignment="Center"/>
+    <ui:UiIntegerTextBox Grid.Row="3" Grid.Column="1" Text="{Binding Grb4, Mode=TwoWay}" MaxLength="10" Height="36" Padding="6"
+     AutomationProperties.Name="Grb4"/>
+   </Grid>
+   <TextBlock Text="{Binding GuardarobaMessage}" Height="36" FontSize="12" Foreground="#536170"
+    TextWrapping="Wrap" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding GuardarobaMessage}"/>
+   <ui:UiIconButton x:Name="GuardarobaSaveButton" XLabel="SALVA" IconSymbol="Save" IconVariant="Filled" Padding="8"
+    Command="{Binding SaveGuardarobaCommand}" AutomationProperties.Name="Salva guardaroba" HorizontalAlignment="Stretch"/>
+  </StackPanel>
+ </Border>
+</UserControl>
