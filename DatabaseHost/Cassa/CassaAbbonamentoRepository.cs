@@ -11,7 +11,7 @@ public sealed partial class CassaDatabaseRepository
 {
     private sealed record SubscriptionHolder(int PersonId,string Nome,string? NumeroSocio,string NumeroTessera);
 
-    private static bool ValidSubscriptionCard(CassaSocio? member) => member is { PersonId:>0, Blocco:false }
+    private static bool ValidSubscriptionCard(CassaSocio? member) => member is { PersonId:>0, Blocco:false, SocioBloccato:false }
         && DateTime.TryParseExact(member.ScadenzaTessera.ToString("D8",CultureInfo.InvariantCulture),"yyyyMMdd",CultureInfo.InvariantCulture,DateTimeStyles.None,out var expiry)
         && expiry>=DateTime.Today;
 
@@ -39,12 +39,14 @@ public sealed partial class CassaDatabaseRepository
         if(type.Prezzo!=request.PrezzoConfermato||type.NumeroIngressi!=request.IngressiConfermati||type.DurataGiorni!=request.DurataConfermata)
             throw new InvalidOperationException("Le condizioni dell'abbonamento sono cambiate. Aggiorna i tipi e conferma i nuovi dati.");
         var first=await FindCard(db,card1,ct);
+        if(first?.SocioBloccato==true)throw new InvalidOperationException(first.AvvisoBlocco);
         if(!ValidSubscriptionCard(first)||first!.PersonId!=request.PersonId1)
             throw new InvalidOperationException("La tessera del primo socio non è valida o non corrisponde al socio identificato.");
         CassaSocio? second=null;
         if(card2.Length>0)
         {
             second=await FindCard(db,card2,ct);
+            if(second?.SocioBloccato==true)throw new InvalidOperationException(second.AvvisoBlocco);
             if(!ValidSubscriptionCard(second)||second!.PersonId!=request.PersonId2)
                 throw new InvalidOperationException("La tessera del secondo socio non è valida o non corrisponde al socio identificato.");
             if(first.PersonId==second.PersonId)throw new InvalidOperationException("Le due tessere devono appartenere a soci distinti.");

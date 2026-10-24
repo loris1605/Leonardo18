@@ -59,7 +59,7 @@ internal static class FidelityChecks
         Check(configured.Records.Length==2&&configured.Records.Single(x=>x.Id==moneyType).Prezzo==7.50m,"Servizi configura traguardo e due tipi di premio");
         CassaRequest Find(int person=100)=>new(){Action=CassaAction.FindCard,PostazioneId=100,NumeroTessera="T"+person};
         CassaRequest Activate(int person,int type)=>new(){Action=CassaAction.ActivateFidelity,PostazioneId=100,NumeroTessera="T"+person,PersonId1=person,TipoFidelityId=type};
-        CassaRequest Enter(int person,int tariff=100)=>new(){Action=CassaAction.RegisterEntry,PostazioneId=100,NumeroTessera="T"+person,Posizione="F"+person,TariffaId=tariff};
+        CassaRequest Enter(int person,int tariff=100)=>new(){Action=CassaAction.RegisterEntry,PostazioneId=100,NumeroTessera="T"+person,Posizione="F"+person,TariffaId=tariff,TimbrareFidelity=true};
         async Task Exit(int person)
         {
             var ready=await repo.Execute(100,new(){Action=CassaAction.PrepareUscita,PostazioneId=100,Posizione="F"+person});
@@ -72,6 +72,13 @@ internal static class FidelityChecks
         Check(result.Fidelity is {Attiva:true,Punti:0,CanIngresso:false},"Attivazione esplicita senza punti regalati");
         await repo.Execute(100,Activate(100,freeType));
         await using(var db=new AppDbContext(options))Check((await db.Fidelities.SingleAsync()).Ciclo==1,"Riprova attivazione non azzera e non duplica la raccolta");
+        var noStamp=Enter(100);noStamp.TimbrareFidelity=false;
+        var noStampResult=await repo.Execute(100,noStamp);
+        Check(noStampResult.Fidelity is {Punti:0}&&noStampResult.Fidelity.Timbri.Length==0,"Ingresso normale con Fidelity attiva non timbra senza richiesta esplicita");
+        await Exit(100);
+        var protocol=JsonSerializer.Serialize(new DatabaseHostRequest{Cassa=Enter(100)},DatabaseProtocolJsonContext.Default.DatabaseHostRequest);
+        Check(JsonSerializer.Deserialize(protocol,DatabaseProtocolJsonContext.Default.DatabaseHostRequest)?.Cassa?.TimbrareFidelity==true,"Protocollo AOT conserva la richiesta esplicita di timbro");
+        Check(JsonSerializer.Deserialize("{\"Cassa\":{}}",DatabaseProtocolJsonContext.Default.DatabaseHostRequest)?.Cassa?.TimbrareFidelity==false,"Richiesta senza flag non timbra per impostazione predefinita");
         var edited=configured.Records.Single(x=>x.Id==freeType).Copy();edited.NumeroIngressi=9;
         await services.Execute(100,new(){Action=ServiziAction.Update,Section=ServiziSection.Fidelity,RecordId=freeType,Record=edited});
         Check((await repo.Execute(100,Find())).Fidelity!.Traguardo==2,"Configurazione successiva non altera raccolta attiva");
@@ -153,7 +160,27 @@ internal static class FidelityChecks
             db.Abbonamenti.Add(new(){Id=105,Nome="Prova annullamento",TipoAbbonamentoId=100,PersonId1=105,Attivo=true,DataInizio=DateTime.Today,DataFine=DateTime.Today.AddDays(30),IngressiAcquistati=3,PagatoAllAcquisto=true,PrezzoAcquisto=30});await db.SaveChangesAsync();
         }
         var subEntry=Enter(105,0);subEntry.AbbonamentoIngressoId=105;subEntry.NumeroIngressoAbbonamento=1;
-        var used=await repo.Execute(100,subEntry);cancelled=await Cancel(105,used);
+        var used=await repo.Execute(100,subEntry);
+        await using(var db=new AppDbContext(options))
+        {
+            (await db.Schede.SingleAsync(x=>x.Id==used.Scheda!.Id)).CheckinTime=DateTime.Now.AddMinutes(-11);
+            await db.SaveChangesAsync();
+        }
+        await Reject(()=>Cancel(105,used),"Amministratore");
+        var stillUsed=await repo.Execute(100,new(){Action=CassaAction.OpenSheet,PostazioneId=100,Posizione="F105"});
+        Check(stillUsed.Scheda?.IngressoAnnullato==false&&stillUsed.Fidelity?.Punti==1
+            &&stillUsed.Fidelity.Timbri.Length==1&&!stillUsed.Conto.Any(x=>x.VoiceDesc.Contains("NON ENTRA")),
+            "Dopo dieci minuti restano ingresso e timbro Fidelity senza storno parziale");
+        await using(var db=new AppDbContext(options))
+        {
+            Check((await db.AbbonamentoConti.SingleAsync(x=>x.AbbonamentoId==105)).Entrato,
+                "Annullamento scaduto non restituisce il bollino abbonamento");
+            (await db.Schede.SingleAsync(x=>x.Id==used.Scheda!.Id)).CheckinTime=DateTime.Now.AddMinutes(-9);
+            await db.SaveChangesAsync();
+        }
+        cancelled=await Cancel(105,used);
+        Check(cancelled.Fidelity?.Punti==0&&cancelled.Fidelity.Timbri.Length==0,
+            "Entro dieci minuti abbonamento e Fidelity annullati insieme");
         Check(cancelled.Conto.Any(x=>x.VoicePrice==0&&x.VoiceDesc.Contains("NON ENTRA")),"Ingresso abbonamento a zero stornabile");
         await using(var db=new AppDbContext(options))Check(!(await db.AbbonamentoConti.SingleAsync(x=>x.AbbonamentoId==105)).Entrato,"Bollino abbonamento restituito");
         await Exit(105);used=await repo.Execute(100,subEntry);

@@ -834,6 +834,9 @@ namespace Models.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<Guid?>("AperturaId").HasColumnType("uniqueidentifier");
+                    b.Property<decimal>("CassaIniziale").HasPrecision(18, 2).HasColumnType("decimal(18,2)");
+                    b.Property<string>("ConteggioCassaIniziale").IsRequired().HasMaxLength(2000).HasColumnType("nvarchar(2000)");
                     b.Property<bool>("Aperta")
                         .HasColumnType("bit");
 
@@ -845,6 +848,7 @@ namespace Models.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AperturaId").IsUnique().HasFilter("[AperturaId] IS NOT NULL");
                     b.ToTable("Giornate");
                 });
 
@@ -953,6 +957,10 @@ namespace Models.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("BloccoSocio").HasColumnType("bit");
+                    b.Property<DateTime?>("BloccoSocioFino").HasColumnType("datetime2");
+                    b.Property<string>("BloccoSocioMotivo").IsRequired().HasMaxLength(1000).HasColumnType("nvarchar(1000)");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -991,15 +999,19 @@ namespace Models.Migrations
                             FirstName = "SOCIO",
                             Natoil = 21000101,
                             SurName = "VIRTUALE",
-                            UniqueParam = "VIRSOC21000101"
+                            UniqueParam = "VIRSOC21000101",
+                            BloccoSocio = false,
+                            BloccoSocioMotivo = ""
                         },
                         new
                         {
                             Id = -999,
-                            FirstName = "Di Servizio",
+                            FirstName = "DI SERVIZIO",
                             Natoil = 21000101,
-                            SurName = "Tessera",
-                            UniqueParam = "TESSER21000101"
+                            SurName = "TESSERA",
+                            UniqueParam = "TESSER21000101",
+                            BloccoSocio = false,
+                            BloccoSocioMotivo = ""
                         },
                         new
                         {
@@ -1007,15 +1019,19 @@ namespace Models.Migrations
                             FirstName = "SOCIO",
                             Natoil = 21000101,
                             SurName = "AMMINISTRATORE",
-                            UniqueParam = "AMMSOC21000101"
+                            UniqueParam = "AMMSOC21000101",
+                            BloccoSocio = false,
+                            BloccoSocioMotivo = ""
                         },
                         new
                         {
                             Id = -3,
-                            FirstName = "Non Importato",
+                            FirstName = "NON IMPORTATO",
                             Natoil = 21000101,
-                            SurName = "Socio",
-                            UniqueParam = "SCOSOC21000101"
+                            SurName = "SOCIO",
+                            UniqueParam = "SCOSOC21000101",
+                            BloccoSocio = false,
+                            BloccoSocioMotivo = ""
                         });
                 });
 

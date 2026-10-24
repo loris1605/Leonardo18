@@ -17,7 +17,7 @@ internal static class StartChecks
             .UseSqlServer("Server=localhost;Database=StartSchemaTest;Integrated Security=true;TrustServerCertificate=true").Options))
         {
             var assembly=sql.GetService<IMigrationsAssembly>();
-            Check(assembly.Migrations.Count==6&&assembly.Migrations.First().Key.EndsWith("_Start")&&assembly.Migrations.Last().Key.EndsWith("_AnnullaIngresso"),"Start conservata e aggiornamento Sospesi aggiuntivo");
+            Check(assembly.Migrations.Count==9&&assembly.Migrations.First().Key.EndsWith("_Start")&&assembly.Migrations.Last().Key.EndsWith("_CassaInizialeGiornata"),"Start conservata e aggiornamento Sospesi aggiuntivo");
             Check(!sql.Database.HasPendingModelChanges(),"Snapshot iniziale allineato al modello completo");
             var all=assembly.Migrations.Select(x=>assembly.CreateMigration(x.Value,sql.Database.ProviderName!)).ToArray();
             var initial=all[0];

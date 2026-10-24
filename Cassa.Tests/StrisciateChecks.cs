@@ -38,7 +38,7 @@ internal static class StrisciateChecks
         {
             var card=await db.Tessere.Include(t=>t.Socio).ThenInclude(s=>s!.Person).SingleAsync(t=>t.NumeroTessera == "000077");
             Check(card.Socio!.NumeroSocio == "000054" && card.NumeroTessera == "000077","Zeri iniziali preservati nei numeri.");
-            Check(card.Socio.Person!.FirstName == "ANNA MARIA" && card.Socio.Person.SurName == fields["cognome"],"Decodifica + e apostrofi preservati come dati.");
+            Check(card.Socio.Person!.FirstName == "ANNA MARIA" && card.Socio.Person.SurName == fields["cognome"].ToUpperInvariant(),"Decodifica + e apostrofi preservati come dati.");
             Check(card.Socio.Person.Natoil == 19950302 && card.Scadenza == 20991231 && await db.Strisciate.CountAsync() == 0,"Smistamento immediato di anagrafica e scadenza, senza record rimasti in coda.");
             Check(await db.People.AnyAsync(),"Testo simile a SQL non viene eseguito.");
         }

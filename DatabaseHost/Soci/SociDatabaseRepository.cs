@@ -50,6 +50,13 @@ public sealed class SociDatabaseRepository(Func<AppDbContext> contextFactory)
                     existingPerson.SurName = data.Cognome; existingPerson.FirstName = data.Nome;
                     existingPerson.Natoil = data.Natoil; existingPerson.UniqueParam = data.CodiceUnivoco;
                     break;
+                case "person-block":
+                    var blockedPerson=await FindPerson(db,data.Id,ct);
+                    SociValidation.Blocco(data);
+                    blockedPerson.BloccoSocio=data.BloccoSocio;
+                    blockedPerson.BloccoSocioFino=data.BloccoSocioFino?.Date;
+                    blockedPerson.BloccoSocioMotivo=data.BloccoSocioMotivo;
+                    break;
                 case "person-delete":
                     var personToDelete = await FindPerson(db, data.Id, ct);
                     if (await db.Soci.AnyAsync(x => x.PersonId == data.Id, ct))
@@ -169,6 +176,7 @@ public sealed class SociDatabaseRepository(Func<AppDbContext> contextFactory)
         var rows = await people
             .SelectMany(p => p.Soci.DefaultIfEmpty(), (p,s) => new { p,s })
             .SelectMany(x => x.s!.Tessere.DefaultIfEmpty(), (x,t) => new SociRecord {
+                BloccoSocio=x.p.BloccoSocio, BloccoSocioFino=x.p.BloccoSocioFino, BloccoSocioMotivo=x.p.BloccoSocioMotivo,
                 Id=x.p.Id, Cognome=x.p.SurName, Nome=x.p.FirstName, Natoil=x.p.Natoil, CodiceUnivoco=x.p.UniqueParam,
                 CodiceSocio=x.s!=null?x.s.Id:0, NumeroSocio=x.s!=null?x.s.NumeroSocio:"",
                 CodiceTessera=t!=null?t.Id:0, NumeroTessera=t!=null?t.NumeroTessera:"", Scadenza=t!=null?t.Scadenza:0 })

@@ -9,6 +9,7 @@ public sealed partial class CassaViewModel
     private int _sospesiBackPage;
     private string _sospesiCard="";
     public bool IsSospesi=>_page==4;
+    public Interaction<RxVoid,RxVoid> SospesiCardFocus {get;}=new();
     public string TesseraFiltroSospesi{get=>_sospesiCard;set=>this.RaiseAndSetIfChanged(ref _sospesiCard,value);}
     public ObservableCollection<CassaSospeso> Sospesi {get;}=[];
     public string RiepilogoSospesi=>$"{Sospesi.Count} sospesi · Da incassare: {Sospesi.Where(x=>x.Tipo=="Credito").Sum(x=>x.Importo):0.00} € · Da pagare: {Sospesi.Where(x=>x.Tipo=="Debito").Sum(x=>x.Importo):0.00} €";
@@ -36,7 +37,8 @@ public sealed partial class CassaViewModel
         if(IsEntry||_busy||_paymentBusy||_guardarobaBusy||_isClosing)return;
         if(!IsSospesi)_sospesiBackPage=_page;
         TesseraFiltroSospesi=card;
-        await Run(CassaAction.LoadSospesi,"CARICAMENTO SOSPESI...",result=>{ApplyPending(result);SetPage(4);},card:card.Trim());
+        if(await Run(CassaAction.LoadSospesi,"CARICAMENTO SOSPESI...",result=>{ApplyPending(result);SetPage(4);},card:card.Trim()))
+            await SetFocus(SospesiCardFocus);
     }
     private async Task ReloadPending()
     {

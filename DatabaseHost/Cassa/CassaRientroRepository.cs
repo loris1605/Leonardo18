@@ -24,7 +24,7 @@ public sealed partial class CassaDatabaseRepository
     }
     private static async Task LoadMemberEntryOptions(AppDbContext db,Postazione station,CassaResult result,CancellationToken ct)
     {
-        if(result.Socio is null)return;
+        if(result.Socio is null || result.Socio.SocioBloccato)return;
         await LoadFidelityOptions(db,result,ct);
         result.Rientro=await FindReentry(db,station,result.Socio,ct);
         result.AbbonamentiIngresso=result.Rientro is null?await LoadEntrySubscriptions(db,result.Socio.PersonId,ct):[];

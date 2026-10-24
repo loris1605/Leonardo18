@@ -1,4 +1,5 @@
 using System.Data;
+using System.Text.Json;
 using AppServices.Database;
 using Microsoft.EntityFrameworkCore;
 using Models.Context;
@@ -23,6 +24,10 @@ public sealed class ReportDatabaseRepository(Func<AppDbContext> contextFactory)
             ??throw new InvalidOperationException("Giornata non trovata. Aggiorna il report.");
         if(day is null){await transaction.CommitAsync(ct);return result;}
         result.GiornataId=day.Id;
+        var opening=await db.Giornate.AsNoTracking().Where(x=>x.Id==day.Id).Select(x=>new{x.CassaIniziale,x.ConteggioCassaIniziale}).SingleAsync(ct);
+        result.CassaIniziale=opening.CassaIniziale;
+        result.TagliCassaIniziale=string.IsNullOrEmpty(opening.ConteggioCassaIniziale)?[]:
+            JsonSerializer.Deserialize(opening.ConteggioCassaIniziale,DatabaseProtocolJsonContext.Default.TaglioEuroArray)??[];
         var start=day.Inizio;var end=day.Aperta?now.AddTicks(1):day.Fine;
         if(end<=start)throw new InvalidOperationException("Intervallo della giornata non valido.");
         result.SituazioneAl=day.Aperta?now:day.Fine;
@@ -51,10 +56,10 @@ public sealed class ReportDatabaseRepository(Func<AppDbContext> contextFactory)
         var purchases=await db.Abbonamenti.AsNoTracking().Where(x=>x.DataAcquisto>=start&&x.DataAcquisto<end).Select(x=>x.PrezzoAcquisto??0).ToArrayAsync(ct);
         result.AbbonamentiVenduti=purchases.Length;result.ValoreAbbonamenti=purchases.Sum();
         var entries=await db.ContabilitaRighe.AsNoTracking().Where(x=>x.Movimento.GiornataId==day.Id&&x.Movimento.Stato==StatoMovimentoContabile.Confermato)
-            .Select(x=>new{x.MovimentoId,x.Dare,x.Avere,x.Conto.Natura,x.Conto.Codice,x.NomeSettore,x.AbbonamentoId}).ToArrayAsync(ct);
+            .Select(x=>new{x.MovimentoId,x.Movimento.OrigineEvento,x.Dare,x.Avere,x.Conto.Natura,x.Conto.Codice,x.NomeSettore,x.AbbonamentoId}).ToArrayAsync(ct);
         result.Ricavi=entries.Where(x=>x.Natura==NaturaConto.Ricavo).Sum(x=>x.Avere-x.Dare);
         result.Costi=entries.Where(x=>x.Natura==NaturaConto.Costo).Sum(x=>x.Dare-x.Avere);
-        var money=entries.Where(x=>x.Codice=="100"||x.Codice=="110").ToArray();
+        var money=entries.Where(x=>x.OrigineEvento!="CassaIniziale"&&(x.Codice=="100"||x.Codice=="110")).ToArray();
         var cashFlows=money.GroupBy(x=>x.MovimentoId).Select(g=>g.Sum(x=>x.Dare-x.Avere)).ToArray();
         result.Incassi=cashFlows.Where(x=>x>0).Sum();result.UsciteMonetarie=-cashFlows.Where(x=>x<0).Sum();
         result.Contabilita=entries.Where(x=>x.Natura==NaturaConto.Ricavo||x.Natura==NaturaConto.Costo)

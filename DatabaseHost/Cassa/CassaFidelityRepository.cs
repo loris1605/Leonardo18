@@ -31,6 +31,7 @@ public sealed partial class CassaDatabaseRepository
     private static async Task ActivateFidelity(AppDbContext db,CassaRequest r,CassaResult result,CancellationToken ct)
     {
         var member=await FindCard(db,r.NumeroTessera,ct);
+        if(member?.SocioBloccato==true)throw new InvalidOperationException(member.AvvisoBlocco);
         if(!ValidSubscriptionCard(member)||member!.PersonId!=r.PersonId1)throw new InvalidOperationException("Identifica il socio con una tessera valida prima di attivare la Fidelity.");
         var type=await db.TipiFidelity.SingleOrDefaultAsync(x=>x.Id==r.TipoFidelityId&&x.Attivo&&x.TipoFidelityInputId==1,ct)
             ??throw new InvalidOperationException("Tipo Fidelity non disponibile.");

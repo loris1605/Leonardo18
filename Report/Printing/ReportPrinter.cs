@@ -63,6 +63,10 @@ thead{display:table-header-group}tr{break-inside:avoid}.summary{display:grid;gri
         void Empty(int count)=>b.Append("<tr><td colspan=\"").Append(count).Append("\">Nessun movimento nel periodo.</td></tr>");
         void End()=>b.Append("</tbody></table>");
         void Summary(string title,ReportRiepilogo[] rows){Header(title,"Nome","Operazioni","Lordo €","Storni €","Netto €","Pagato €","Da pagare €");foreach(var x in rows)Row(x.Nome,x.Operazioni.ToString(culture),N(x.Lordo),N(x.Storni),N(x.Netto),N(x.Pagato),N(x.DaPagare));if(rows.Length==0)Empty(7);End();}
+        Header("Cassa Iniziale","Taglio €","Quantità","Subtotale €");
+        foreach(var x in data.TagliCassaIniziale)Row(N(x.Taglio),x.Quantita.ToString(culture),N(x.Totale));
+        if(data.TagliCassaIniziale.Length==0)Empty(3);End();
+        b.Append("<p><strong>Cassa Iniziale: ").Append(N(data.CassaIniziale)).Append(" €</strong> · Variazione Cassa + Banca: ").Append(N(data.SaldoMonetario)).Append(" € · Disponibilità con cassa iniziale: ").Append(N(data.DisponibilitaMonetaria)).Append(" €</p><p class=\"muted\">Il fondo iniziale è patrimoniale e non costituisce un incasso o un ricavo.</p>");
         Summary("Settori",data.Settori);
         Header("Voci di spesa","Settore","Dettaglio","Operazioni","Netto €","Pagato €","Da pagare €");
         foreach(var x in data.Voci)Row(x.Settore,x.Descrizione,x.Operazioni.ToString(culture),N(x.Totale),N(x.Pagato),N(x.DaPagare));if(data.Voci.Length==0)Empty(6);End();

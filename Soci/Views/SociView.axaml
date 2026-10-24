@@ -56,6 +56,9 @@
         </Grid>
        </Border>
        <TextBlock Text="{Binding ResultText}" Foreground="White" FontSize="13" TextWrapping="Wrap"/>
+       <TextBlock Text="BLOCCHI" Foreground="White" FontWeight="Bold"/>
+       <ui:UiButton x:Name="BlocchiSocioButton" Content="GESTISCI BLOCCO SOCIO" Command="{Binding BlocchiCommand}" Padding="10,7" HorizontalAlignment="Left"/>
+       <TextBlock Text="{Binding GroupBindingT.StatoBlocco}" Foreground="White" TextWrapping="Wrap" MaxHeight="110"/>
        <TextBlock Text="CODICI SOCIO" Foreground="White" FontWeight="Bold"/>
        <WrapPanel IsEnabled="{Binding GroupEnabled}">
         <ui:UiButton Content="AGGIUNGI CODICE" Command="{Binding AddCodiceSocioCommand}" Padding="10,7" Margin="0,0,8,6"/>

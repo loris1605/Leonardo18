@@ -8,9 +8,13 @@ namespace Models.Tables
     ~Person() => global::Leonardo18.Diagnostics.GcDebugLog.Collected(this);
 #endif
 
+        public bool BloccoSocio { get; set; }
+        public DateTime? BloccoSocioFino { get; set; }
+        public string BloccoSocioMotivo { get; set; } = "";
         public int Id { get; set; }
-        public string FirstName { get; set; } = string.Empty;
-        public string SurName { get; set; } = string.Empty;
+        private string _firstName="",_surName="";
+        public string FirstName { get=>_firstName; set=>_firstName=(value??"").ToUpperInvariant(); }
+        public string SurName { get=>_surName; set=>_surName=(value??"").ToUpperInvariant(); }
         public int Natoil { get; set; }
         public string UniqueParam {  get; set; } = string.Empty;
 

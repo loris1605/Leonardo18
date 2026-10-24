@@ -7,15 +7,42 @@ using System.Text.Json;
 namespace Leonardo18.DatabaseHost;
 internal static class Program
 {
-    public static async Task<int> Main()
+    public static async Task<int> Main(string[] args)
     {
+        await using var mirror = new Mirror.MirrorCoordinator(automatic: !args.Any(x=>x is "--mirror-connect" or "--mirror-sync"));
+        if(args.Contains("--mirror-probe"))
+        {
+            var source=AppServices.Connection.CurrentConnectionString;mirror.Observe(source);
+            var deadline=DateTime.UtcNow.AddSeconds(90);
+            while(DateTime.UtcNow<deadline)
+            {
+                var state=mirror.Status(source);
+                if(!state.Busy&&(state.Message=="Mirror aggiornato"||state.NextAttemptUtc is not null||state.NeedsAuthentication))
+                {Console.WriteLine(JsonSerializer.Serialize(state));return state.Message=="Mirror aggiornato"?0:1;}
+                await Task.Delay(250);
+            }
+            Console.WriteLine("Verifica background non completata nel tempo previsto.");return 1;
+        }
+        if(args.Contains("--mirror-connect") || args.Contains("--mirror-sync"))
+        {
+            var source=AppServices.Connection.CurrentConnectionString;
+            if(args.Contains("--mirror-connect"))
+                await mirror.ConnectAsync(source,(url,code,_)=>{Console.WriteLine("AUTH_URL: "+url);Console.WriteLine("AUTH_CODE: "+code);return Task.CompletedTask;});
+            mirror.Observe(source);
+            mirror.RequestSync(source);
+            await mirror.RunOnceAsync(true);
+            // A queued automatic copy may already own the run gate.
+            while(mirror.Status().Busy || mirror.Status().Pending && mirror.Status().NextAttemptUtc is null)await Task.Delay(200);
+            var status=mirror.Status();Console.WriteLine(JsonSerializer.Serialize(status));
+            return status.LastCompletedUtc is not null && !status.Pending ? 0:1;
+        }
         await using var strisciate = new Strisciate.StrisciateReceiver();
         // Stay alive across navigation. EOF closes the worker when the parent application exits.
         try
         {
             while (await Console.In.ReadLineAsync() is { } input)
             {
-                var response = await Execute(input, strisciate);
+                var response = await Execute(input, strisciate, mirror);
                 await Console.Out.WriteLineAsync(JsonSerializer.Serialize(response, DatabaseProtocolJsonContext.Default.DatabaseHostResponse));
                 await Console.Out.FlushAsync();
             }
@@ -24,7 +51,7 @@ internal static class Program
         catch (IOException) { return 1; }
     }
 
-    private static async Task<DatabaseHostResponse> Execute(string input, Strisciate.StrisciateReceiver strisciate)
+    private static async Task<DatabaseHostResponse> Execute(string input, Strisciate.StrisciateReceiver strisciate, Mirror.MirrorCoordinator mirror)
     {
         DatabaseHostResponse response;
         bool applyingMigrations = false;
@@ -34,7 +61,20 @@ internal static class Program
             if (request is null) throw new InvalidOperationException("Richiesta assente.");
             applyingMigrations = request.Operation == "migrate";
             var service = new ConnectionService();
-            if (request.Operation == "ping")
+            mirror.Observe(request.ConnectionString);
+            if(request.Operation is "mirror-status" or "mirror-sync" or "mirror-connect")
+            {
+                await using var permissionDb=new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(request.ConnectionString).Options);
+                if(!await permissionDb.Operatori.AnyAsync(x=>x.Id==request.OperatorId&&x.Abilitato))throw new InvalidOperationException("Accedi nuovamente.");
+                if(request.Operation=="mirror-connect"&&!await permissionDb.Permessi.AnyAsync(x=>x.OperatoreId==request.OperatorId&&x.Postazione!.TipoPostazioneId==1))throw new InvalidOperationException("Il collegamento Microsoft richiede un operatore Amministratore.");
+                response=new(){Success=true,Mirror=request.Operation switch
+                {
+                    "mirror-sync"=>mirror.RequestSync(request.ConnectionString),
+                    "mirror-connect"=>await mirror.BeginConnectAsync(request.ConnectionString),
+                    _=>mirror.Status(request.ConnectionString)
+                }};
+            }
+            else if (request.Operation == "ping")
                 response = new() { Success = true, Message = "DatabaseHost pronto." };
             else if (request.Operation == "discover")
                 response = new() { Success = true, Instances = (await service.GetInstancesAsync()).ToArray() };
@@ -74,7 +114,7 @@ internal static class Program
             {
                 var repository = new Menu.MenuDatabaseRepository(() => new AppDbContext(
                     new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(request.ConnectionString).Options));
-                response = new() { Success = true, Menu = await repository.Execute(request.OperatorId, request.Operation) };
+                response = new() { Success = true, Menu = await repository.Execute(request.OperatorId, request.Operation, apertura:request.AperturaGiornata) };
             }
             else if (request.Operation is "login-operators" or "login-authenticate")
             {

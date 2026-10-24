@@ -52,7 +52,7 @@ internal static class IngressoContabilitaChecks
             Check(source.Pagato&&source.VoicePrice==12.50m,"Ingresso operativo pagato");
             Check(movement.Causale=="INGRESSO_PAGATO"&&movement.Stato==StatoMovimentoContabile.Confermato,"Movimento ingresso confermato");
             Check(movement.OrigineModulo=="Cassa"&&movement.OrigineEntita=="SchedaConto"&&movement.OrigineId==source.Id.ToString()&&movement.OrigineEvento=="IngressoPagato","Origine operativa tracciata");
-            Check(movement.PersonId==100&&movement.NumeroSocio=="S100"&&movement.NumeroTessera=="T100"&&movement.Nominativo=="Rossi Mario","Dati del socio conservati");
+            Check(movement.PersonId==100&&movement.NumeroSocio=="S100"&&movement.NumeroTessera=="T100"&&movement.Nominativo=="ROSSI MARIO","Dati del socio conservati");
             Check(movement.OperatoreId==100&&movement.NomeOperatore=="Operatore ingresso"&&movement.PostazioneId==100&&movement.NomePostazione=="Cassa ingresso"&&movement.GiornataId==100,"Contesto operatore postazione giornata");
             Check(movement.DataOra==source.DataOra&&movement.DataCompetenza==DateTime.Today.AddDays(-1),"Data evento e competenza della giornata aperta");
             Check(movement.Note.Contains("A01")&&movement.Note.Contains("Nota ingresso")&&movement.IdOperazione!=Guid.Empty,"Note posizione e chiave evento");
@@ -71,7 +71,7 @@ internal static class IngressoContabilitaChecks
         await using(var db=new AppDbContext(options))
         {
             var movement=await db.ContabilitaMovimenti.Include(x=>x.Righe).SingleAsync();
-            Check(movement.Nominativo=="Rossi Mario"&&movement.Righe.All(x=>x.EtichettaTariffa=="Ridotto"),"Modifiche anagrafiche non riscrivono lo storico");
+            Check(movement.Nominativo=="ROSSI MARIO"&&movement.Righe.All(x=>x.EtichettaTariffa=="Ridotto"),"Modifiche anagrafiche non riscrivono lo storico");
             Check(await db.Schede.CountAsync()==1&&await db.ContabilitaMovimenti.CountAsync()==1,"Richiesta ripetuta non duplica operativo o contabilità");
         }
         var payment=new CassaRequest{Action=CassaAction.SetPagamento,PostazioneId=100,Posizione="A01",SchedaId=first.Scheda!.Id,ContoId=sourceId,Pagato=false};
@@ -127,6 +127,25 @@ internal static class IngressoContabilitaChecks
         var entryReversal=new CassaRequest{Action=CassaAction.StornaConto,PostazioneId=100,Posizione="A01",SchedaId=first.Scheda!.Id,ContoId=payment.ContoId};
         await Reject(()=>failing.Execute(100,entryReversal),"errore contabile simulato");
         await using(var db=new AppDbContext(options))Check(await db.SchedeConto.CountAsync(x=>x.SchedaId==first.Scheda.Id)==1,"Errore storno contabile annulla anche la riga negativa");
+        var boundary=DateTime.Now;
+        Check(CassaAnnullamentoIngresso.Consentito(boundary.AddMinutes(-10).AddTicks(1),boundary),"Annullamento consentito prima dei dieci minuti");
+        Check(!CassaAnnullamentoIngresso.Consentito(boundary.AddMinutes(-10),boundary),"Al decimo minuto serve autorizzazione");
+        Check(!CassaAnnullamentoIngresso.Consentito(boundary.AddSeconds(1),boundary),"Data ingresso futura non autorizza annullamento");
+        await using(var db=new AppDbContext(options))
+        {
+            (await db.Schede.SingleAsync(x=>x.Id==first.Scheda.Id)).CheckinTime=DateTime.Now.AddMinutes(-11);
+            await db.SaveChangesAsync();
+        }
+        await Reject(()=>repository.Execute(100,entryReversal),"Amministratore");
+        await using(var db=new AppDbContext(options))
+        {
+            Check(!await db.ContabilitaMovimenti.AnyAsync(x=>x.OrigineEvento=="StornoIngresso")
+                &&await db.SchedeConto.CountAsync(x=>x.SchedaId==first.Scheda.Id)==1
+                &&!await db.Schede.Where(x=>x.Id==first.Scheda.Id).Select(x=>x.IngressoAnnullato).SingleAsync(),
+                "Scadenza verificata nel database senza modifiche operative o contabili");
+            (await db.Schede.SingleAsync(x=>x.Id==first.Scheda.Id)).CheckinTime=DateTime.Now.AddMinutes(-9);
+            await db.SaveChangesAsync();
+        }
         var reversedEntry=await repository.Execute(100,entryReversal);
         Check(reversedEntry.Conto.Sum(x=>x.VoicePrice)==0&&reversedEntry.Conto.Any(x=>x.VoicePrice==-12.50m&&x.Pagato),"Storno ingresso pagato azzera il conto operativo");
         await using(var db=new AppDbContext(options))

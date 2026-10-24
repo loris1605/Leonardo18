@@ -41,7 +41,7 @@ internal static class SmistamentoChecks
         {
             var person=await db.People.SingleAsync(p=>p.Id==personId);
             var card=await db.Tessere.SingleAsync(t=>t.NumeroTessera=="000077");
-            Check(person.UniqueParam==key && person.Natoil==19800101 && person.SurName==fields["cognome"] && person.FirstName==fields["nome"],"Tessera esistente aggiorna la nascita della Person collegata preservando identità e nomi.");
+            Check(person.UniqueParam==key && person.Natoil==19800101 && person.SurName==fields["cognome"].ToUpperInvariant() && person.FirstName==fields["nome"],"Tessera esistente aggiorna la nascita della Person collegata preservando identità e nomi.");
             Check(card.Scadenza==20300101 && !card.Abilitato,"Tessera esistente aggiorna scadenza e conserva abilitazione.");
             Check(await db.People.CountAsync()==people && await db.Soci.CountAsync()==members && await db.Tessere.CountAsync()==cards,"Tessera esistente non aggiunge Person, NumeroSocio o NumeroTessera.");
             Check(await db.Strisciate.CountAsync()==0,"Tessera esistente non resta in coda.");

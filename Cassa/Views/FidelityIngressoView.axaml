@@ -1,27 +1,35 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Cassa.ViewModels" xmlns:db="using:AppServices.Database" xmlns:ui="using:ControlStyles" x:Class="Cassa.Views.FidelityIngressoView" x:DataType="vm:CassaViewModel">
- <Border IsVisible="{Binding HasMember}" Background="#FFF7E5" BorderBrush="#D6B868" BorderThickness="2" CornerRadius="14" Padding="14">
+ <UserControl.Resources>
+       <DataTemplate x:Key="TimbroFidelityTemplate" x:DataType="vm:TimbroIngressoFidelityViewModel">
+        <StackPanel Width="96" Margin="0,0,8,10" Spacing="5">
+         <Button Width="64" Height="64" CornerRadius="32" BorderThickness="2" HorizontalAlignment="Center"
+          HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="{Binding Sfondo}" BorderBrush="{Binding Bordo}"
+          IsEnabled="{Binding Corrente}" Command="{Binding $parent[UserControl].((vm:CassaViewModel)DataContext).TimbraERegistraIngressoCommand}"
+          ToolTip.Tip="{Binding Aiuto}" AutomationProperties.Name="{Binding Numero,StringFormat='Timbro Fidelity {0}'}">
+          <TextBlock Text="{Binding Simbolo}" FontSize="24" FontWeight="Bold" Foreground="#163E38"/>
+         </Button>
+         <TextBlock Text="{Binding Stato}" FontSize="11" TextAlignment="Center" TextWrapping="Wrap" Foreground="#475569"/>
+        </StackPanel>
+       </DataTemplate>
+ </UserControl.Resources>
+ <Border IsVisible="{Binding HasMember}" Background="#F8F3E7" BorderBrush="#D7C7A4" BorderThickness="2" CornerRadius="16" Padding="16">
   <StackPanel Spacing="8">
-   <TextBlock Text="FIDELITY" Foreground="#7C570B" FontSize="13" FontWeight="Bold" LetterSpacing="2"/>
+   <TextBlock Text="TESSERA FIDELITY" Foreground="#7C570B" FontSize="13" FontWeight="Bold" LetterSpacing="2"/>
    <StackPanel IsVisible="{Binding HasFidelity}" Spacing="6">
     <TextBlock Text="{Binding Fidelity.Nome}" FontSize="18" FontWeight="Bold" Foreground="#5D430A"/>
     <TextBlock Text="{Binding Fidelity.Progresso}" TextWrapping="Wrap"/>
-    <TextBlock Text="{Binding Fidelity.Premio}" TextWrapping="Wrap" FontWeight="Bold" Foreground="#166534"/>
+    <TextBlock IsVisible="{Binding HasPremioFidelity}" Text="{Binding Fidelity.Premio}" TextWrapping="Wrap" FontWeight="Bold" Foreground="#166534"/>
     <TextBlock Text="{Binding Fidelity.Scadenza}"/>
-    <ScrollViewer MaxHeight="190" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-     <ItemsControl ItemsSource="{Binding Fidelity.Timbri}">
+    <TextBlock Text="{Binding ProssimoPremioFidelity}" FontSize="12" Foreground="#536B66" TextWrapping="Wrap"/>
+    <ScrollViewer MaxHeight="250" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+     <ItemsControl ItemsSource="{Binding TimbriTesseraFidelity}" ItemTemplate="{StaticResource TimbroFidelityTemplate}" AutomationProperties.Name="Tessera timbri Fidelity">
       <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-      <ItemsControl.ItemTemplate>
-       <DataTemplate x:DataType="db:CassaTimbroFidelity">
-        <StackPanel Width="82" Margin="0,0,8,10" Spacing="4">
-         <Border Background="#F4D98B" BorderBrush="#B99136" BorderThickness="2" CornerRadius="28" Width="56" Height="56" HorizontalAlignment="Center">
-          <TextBlock Text="✓" FontSize="24" FontWeight="Bold" Foreground="#765208" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-         </Border>
-         <TextBlock Text="{Binding Data}" FontSize="11" TextAlignment="Center" TextWrapping="Wrap"/>
-        </StackPanel>
-       </DataTemplate>
-      </ItemsControl.ItemTemplate>
+
      </ItemsControl>
     </ScrollViewer>
+    <TextBlock IsVisible="{Binding HasAltriSpaziFidelity}" Text="{Binding AltriSpaziFidelity}" Foreground="#536B66" FontSize="11" TextWrapping="Wrap"/>
+    <TextBlock Text="{Binding TimbroIngressoFidelityInfo}" Foreground="#536B66" FontSize="12" TextWrapping="Wrap"/>
+
    </StackPanel>
    <TextBlock Text="Nessuna Fidelity attiva." IsVisible="{Binding !HasFidelity}"/>
    <StackPanel IsVisible="{Binding ShowActivateFidelity}" Spacing="6">

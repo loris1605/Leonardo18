@@ -16,7 +16,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
     private readonly ICassaRepository _repository;
     private readonly int _postazioneId;
     private readonly Signal<RxVoid> _toMenu = new();
-    private readonly StateSignal<bool> _ready = new(false), _entryReady = new(false);
+    private readonly StateSignal<bool> _ready = new(false), _entryReady = new(false), _menuReady = new(true);
     private readonly List<IDisposable> _subscriptions = [];
     private readonly ReactiveCommand<RxVoid, RxVoid>[] _commands;
     public ReactiveCommand<CassaVoceSpesa, RxVoid> AddChargeCommand { get; }
@@ -77,6 +77,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
     public bool IsBusy => _busy;
     public bool IsUiReady => _loaded && !_busy && !_isClosing;
     public bool IsPostazione => _page == 0;
+    public bool CanBackToMenu => IsPostazione && !_busy && !_isClosing;
     public bool IsEntry => _page == 1;
     public bool IsList => _page == 2;
     public bool HasSheet => _sheet is not null;
@@ -84,7 +85,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
     public bool MemberInside => !string.IsNullOrWhiteSpace(_member?.PosizioneOccupata);
     public CassaScheda? Sheet => _sheet;
     public CassaSocio? Member => _member;
-    public bool ShowIngressi => Member?.HasSospesi != true;
+    public bool ShowIngressi => Member?.HasSospesi != true && Member?.SocioBloccato != true;
     public ObservableCollection<CassaSospeso> SospesiIngresso { get; } = [];
     public ObservableCollection<CassaConto> Conto { get; } = [];
     public ObservableCollection<CassaVoceSpesa> VociSpesa { get; } = [];
@@ -102,7 +103,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
     public string ResultText => $"{Schede.Count} soci all'interno";
     public decimal Totale => Conto.Sum(x => x.VoicePrice);
     public decimal DaPagare => Conto.Where(x => !x.Pagato).Sum(x => x.VoicePrice);
-    public bool CanSelectIngresso => IsUiReady && Member is { HasSospesi:false };
+    public bool CanSelectIngresso => IsUiReady && Member is { HasSospesi:false, SocioBloccato:false };
     public string EntryWarning => CassaEntryRules.Validate(Member, NumeroTessera, EntryPosition, EntryValidationRate, _occupied, DateTime.Today);
 
     public string Posizione { get => _position; set => this.RaiseAndSetIfChanged(ref _position, value); }
@@ -129,9 +130,9 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
         InitializeAbbonamento();
         InitializeSospesi();InitializeStoricoFidelity();
         InitializeEntrySubscriptions();InitializeFidelity();
-        InitializeUscita();
+        InitializeUscita();InitializeBloccoScheda();InitializePagamentoTutto();InitializeElencoSoci();
         // Returning to the menu must remain possible if loading the station fails.
-        MenuCommand = ReactiveCommand.CreateFromTask(BackToMenu);
+        MenuCommand = ReactiveCommand.CreateFromTask(BackToMenu, _menuReady);
         BackCommand = ReactiveCommand.CreateFromTask(Back, _ready);
         OpenSheetCommand = ReactiveCommand.CreateFromTask(OpenSheet, _ready);
         ClearSheetCommand = ReactiveCommand.CreateFromTask(ClearSheet, _ready);
@@ -139,7 +140,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
         ListaSociCommand = ReactiveCommand.CreateFromTask(LoadList, _ready);
         RefreshListCommand = ReactiveCommand.CreateFromTask(LoadList, _ready);
         FindCardCommand = ReactiveCommand.CreateFromTask(FindCard, _ready);
-        RegisterEntryCommand = ReactiveCommand.CreateFromTask(RegisterEntry, _entryReady);
+        RegisterEntryCommand = ReactiveCommand.CreateFromTask(()=>RegisterEntry(), _entryReady);
         OpenSelectedCommand = ReactiveCommand.CreateFromTask(OpenSelected, _ready);
         OpenMemberSheetCommand = ReactiveCommand.CreateFromTask(OpenMemberSheet, _ready);
         ResetEntryCommand = ReactiveCommand.CreateFromTask(ResetEntry, _ready);
@@ -185,7 +186,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
 
     private async Task<bool> Run(CassaAction action, string message, Action<CassaResult> apply,
         string position = "", string card = "", int rateId = 0, int sheetId = 0, int listinoId = 0, int[]? wardrobe = null,
-        int contoId = 0, bool pagato = false, long sospesoId = 0, Guid uscitaId = default, string versioneConto = "", int abbonamentoIngressoId = 0, int numeroIngressoAbbonamento = 0, bool rientro = false, int tipoFidelityId = 0, int personFidelityId = 0, int ingressoFidelityId = 0, bool usaCreditoFidelity = false)
+        int contoId = 0, bool pagato = false, long sospesoId = 0, Guid uscitaId = default, string versioneConto = "", int abbonamentoIngressoId = 0, int numeroIngressoAbbonamento = 0, bool rientro = false, int tipoFidelityId = 0, int personFidelityId = 0, int ingressoFidelityId = 0, bool usaCreditoFidelity = false, bool bloccoScheda = false, int[]? contoIds = null, decimal prezzoConfermato = 0, bool timbrareFidelity = false)
     {
         if (_busy || _isClosing) return false;
         var ct = Token;
@@ -193,10 +194,10 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
         try
         {
             var result = await _repository.Execute(new CassaRequest {
-                Action=action, PostazioneId=_postazioneId, Posizione=position,
+                Action=action, ContoIds=contoIds??[],PrezzoConfermato=prezzoConfermato,PostazioneId=_postazioneId, Posizione=position,BloccoScheda=bloccoScheda,
                 NumeroTessera=card, TariffaId=rateId, Note=Note, SchedaId=sheetId, ListinoId=listinoId,
                 Grb1=wardrobe?[0] ?? 0, Grb2=wardrobe?[1] ?? 0, Grb3=wardrobe?[2] ?? 0, Grb4=wardrobe?[3] ?? 0,
-                TipoFidelityId=tipoFidelityId,PersonId1=personFidelityId,IngressoFidelityId=ingressoFidelityId,UsaCreditoFidelity=usaCreditoFidelity,Rientro=rientro,AbbonamentoIngressoId=abbonamentoIngressoId,NumeroIngressoAbbonamento=numeroIngressoAbbonamento,ContoId=contoId, Pagato=pagato, SospesoId=sospesoId, UscitaId=uscitaId, VersioneConto=versioneConto
+                TipoFidelityId=tipoFidelityId,PersonId1=personFidelityId,IngressoFidelityId=ingressoFidelityId,UsaCreditoFidelity=usaCreditoFidelity,TimbrareFidelity=timbrareFidelity,Rientro=rientro,AbbonamentoIngressoId=abbonamentoIngressoId,NumeroIngressoAbbonamento=numeroIngressoAbbonamento,ContoId=contoId, Pagato=pagato, SospesoId=sospesoId, UscitaId=uscitaId, VersioneConto=versioneConto
             }, ct);
             ct.ThrowIfCancellationRequested();
             if (_isClosing) return false;
@@ -232,7 +233,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
     { SetSheet(null, []); Posizione=""; InfoLabel=""; await SetFocus(PositionFocus); }
     private async Task AddCharge(CassaVoceSpesa item)
     {
-        if (Sheet is not { } sheet || !IsPostazione || !VociSpesa.Contains(item)) return;
+        if (!CanEditSheet || Sheet is not { } sheet || !IsPostazione || !VociSpesa.Contains(item)) return;
         if (await Run(CassaAction.AddCharge, "REGISTRAZIONE ADDEBITO...", result => {
             SetSheet(result.Scheda, result.Conto, result.VociSpesa,result.Fidelity);
         }, position: sheet.Posizione, sheetId: sheet.Id, listinoId: item.ListinoId,usaCreditoFidelity:UsaCreditoFidelity)) await SetFocus(PositionFocus);
@@ -248,14 +249,15 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
             .Select(g => new CassaSettoreSpesa(g.Key, g.ToArray())).ToArray();
         this.RaisePropertyChanged(nameof(HasVociSpesa)); this.RaisePropertyChanged(nameof(SettoriSpesa));
         SelectedSettoreSpesa = SettoriSpesa.FirstOrDefault(s => s.Nome == selectedSector) ?? SettoriSpesa.FirstOrDefault();
-        foreach (var name in new[]{nameof(Sheet),nameof(HasSheet),nameof(Totale),nameof(DaPagare)}) this.RaisePropertyChanged(name);
+        RefreshUscita();
+        foreach (var name in new[]{nameof(Sheet),nameof(HasSheet),nameof(Totale),nameof(DaPagare),nameof(CanEditSheet),nameof(CanSetBloccoScheda),nameof(BloccoSchedaLabel)}) this.RaisePropertyChanged(name);
     }
     private async Task SetPagamento(CassaConto line)
     {
-        if (_busy || _paymentBusy || _isClosing || Sheet is not { } sheet || !IsPostazione || !Conto.Contains(line)) return;
+        if (!CanEditSheet || _busy || _paymentBusy || _isClosing || Sheet is not { } sheet || !IsPostazione || !Conto.Contains(line)) return;
         var ct=Token;
         var paymentSaved=false;
-        _paymentBusy=true; this.RaisePropertyChanged(nameof(IsPaymentBusy)); InfoLabel="";
+        _paymentBusy=true; this.RaisePropertyChanged(nameof(IsPaymentBusy));RefreshUscita();this.RaisePropertyChanged(nameof(CanEditSheet));this.RaisePropertyChanged(nameof(CanSetBloccoScheda)); InfoLabel="";
         try
         {
             var result=await _repository.Execute(new CassaRequest {
@@ -286,7 +288,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
             if (!_isClosing)
             {
                 if (Sheet?.Id==sheet.Id) Conto.FirstOrDefault(x=>x.Id==line.Id)?.RefreshPagamento();
-                _paymentBusy=false; this.RaisePropertyChanged(nameof(IsPaymentBusy));
+                _paymentBusy=false; this.RaisePropertyChanged(nameof(IsPaymentBusy));RefreshUscita();this.RaisePropertyChanged(nameof(CanEditSheet));this.RaisePropertyChanged(nameof(CanSetBloccoScheda));
             }
         }
         if (paymentSaved && !_isClosing && IsPostazione && Sheet?.Id==sheet.Id) await SetFocus(PositionFocus);
@@ -300,9 +302,11 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
     }
     private async Task StornaConto(CassaConto line)
     {
-        if (_busy || _paymentBusy || _isClosing || !line.CanStornare || Sheet is not { } sheet || !IsPostazione || !Conto.Contains(line)) return;
+        if (!CanEditSheet || _busy || _paymentBusy || _isClosing || !line.CanStornare || Sheet is not { } sheet || !IsPostazione || !Conto.Contains(line)) return;
+        if(line.IsIngresso&&!CassaAnnullamentoIngresso.Consentito(sheet.CheckinTime,DateTime.Now))
+        { InfoLabel=CassaAnnullamentoIngresso.AutorizzazioneRichiesta;return; }
         var ct=Token; var saved=false;
-        _paymentBusy=true; this.RaisePropertyChanged(nameof(IsPaymentBusy)); InfoLabel="";
+        _paymentBusy=true; this.RaisePropertyChanged(nameof(IsPaymentBusy));RefreshUscita();this.RaisePropertyChanged(nameof(CanEditSheet));this.RaisePropertyChanged(nameof(CanSetBloccoScheda)); InfoLabel="";
         try
         {
             var result=await _repository.Execute(new CassaRequest {
@@ -328,7 +332,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
         }
         finally
         {
-            if (!_isClosing) { _paymentBusy=false; this.RaisePropertyChanged(nameof(IsPaymentBusy)); }
+            if (!_isClosing) { _paymentBusy=false; this.RaisePropertyChanged(nameof(IsPaymentBusy));RefreshUscita();this.RaisePropertyChanged(nameof(CanEditSheet));this.RaisePropertyChanged(nameof(CanSetBloccoScheda)); }
         }
         if (saved && !_isClosing && IsPostazione && Sheet?.Id==sheet.Id) await SetFocus(PositionFocus);
     }
@@ -364,7 +368,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
     }
     private async Task SaveGuardaroba()
     {
-        if (_busy || _guardarobaBusy || _isClosing || Sheet is not { } sheet || !IsPostazione) return;
+        if (!CanEditSheet || _busy || _guardarobaBusy || _isClosing || Sheet is not { } sheet || !IsPostazione) return;
         var inputs=new[] { Grb1, Grb2, Grb3, Grb4 };
         var values=new int[4];
         for (var i=0;i<inputs.Length;i++)
@@ -375,7 +379,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
             { GuardarobaMessage=$"Grb{i+1}: numero non valido."; return; }
         }
         var ct=Token; var saved=false;
-        _guardarobaBusy=true; this.RaisePropertyChanged(nameof(IsGuardarobaBusy)); GuardarobaMessage="Salvataggio...";
+        _guardarobaBusy=true; this.RaisePropertyChanged(nameof(IsGuardarobaBusy));RefreshUscita();this.RaisePropertyChanged(nameof(CanEditSheet));this.RaisePropertyChanged(nameof(CanSetBloccoScheda)); GuardarobaMessage="Salvataggio...";
         try
         {
             var result=await _repository.Execute(new CassaRequest {
@@ -399,19 +403,29 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
         }
         finally
         {
-            if (!_isClosing) { _guardarobaBusy=false; this.RaisePropertyChanged(nameof(IsGuardarobaBusy)); }
+            if (!_isClosing) { _guardarobaBusy=false; this.RaisePropertyChanged(nameof(IsGuardarobaBusy));RefreshUscita();this.RaisePropertyChanged(nameof(CanEditSheet));this.RaisePropertyChanged(nameof(CanSetBloccoScheda)); }
         }
         if (saved && !_isClosing && IsPostazione && Sheet?.Id==sheet.Id) await SetFocus(PositionFocus);
     }
     private async Task PrepareEntry()
     {
+        var importedCard="";
         if (await Run(CassaAction.PrepareEntry, "PREPARAZIONE INGRESSO IN CORSO...", result => {
             SetMember(null); NumeroTessera=""; EntryPosition=""; Note="";
+            importedCard=result.TesseraImportata;
             _occupied=result.PosizioniOccupate;
             _ingressiOrdinari=result.Ingressi;Ingressi.Clear(); foreach (var rate in result.Ingressi) Ingressi.Add(rate);
             SelectedIngresso=Ingressi.FirstOrDefault(); SetPage(1);
             if (Ingressi.Count == 0) InfoLabel="Nessun ingresso disponibile per questa postazione.";
-        })) await SetFocus(CardFocus);
+        }))
+        {
+            if(!string.IsNullOrWhiteSpace(importedCard))
+            {
+                NumeroTessera=importedCard;
+                await FindCard();
+            }
+            else await SetFocus(CardFocus);
+        }
     }
     private async Task FindCard()
     {
@@ -434,13 +448,13 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
         foreach (var name in new[]{nameof(Member),nameof(HasMember),nameof(MemberInside)}) this.RaisePropertyChanged(name);
         RefreshEntry();
     }
-    private async Task RegisterEntry()
+    private async Task RegisterEntry(bool timbrareFidelity=false)
     {
         if (!string.IsNullOrEmpty(EntryWarning)) { InfoLabel=EntryWarning; return; }
         var position=EntryPosition.Trim();
         if (await Run(CassaAction.RegisterEntry, "REGISTRAZIONE INGRESSO IN CORSO...", result => {
             Posizione=result.Scheda?.Posizione ?? position; SetPage(0);
-        }, position, NumeroTessera.Trim(), SelectedIngresso?.Id??0, abbonamentoIngressoId:_bollino?.Data.AbbonamentoId??0, numeroIngressoAbbonamento:_bollino?.Numero??0,rientro:HasRientro,ingressoFidelityId:_selectedFidelity?Fidelity?.Id??0:0,usaCreditoFidelity:UsaCreditoFidelity)) await OpenSheet();
+        }, position, NumeroTessera.Trim(), SelectedIngresso?.Id??0, abbonamentoIngressoId:_bollino?.Data.AbbonamentoId??0, numeroIngressoAbbonamento:_bollino?.Numero??0,rientro:HasRientro,ingressoFidelityId:_selectedFidelity?Fidelity?.Id??0:0,usaCreditoFidelity:UsaCreditoFidelity,timbrareFidelity:timbrareFidelity)) await OpenSheet();
     }
     private async Task LoadList()
     {
@@ -452,12 +466,15 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
     {
         if (_isClosing) return;
         var id=SelectedScheda?.Id;
-        var search=SearchText.Trim(); Schede.Clear();
-        foreach (var sheet in _inside.Where(x => search.Length == 0
-            || x.Posizione.Contains(search,StringComparison.OrdinalIgnoreCase)
-            || x.Anagrafica.Contains(search,StringComparison.OrdinalIgnoreCase)
-            || x.NumeroTessera.Contains(search,StringComparison.OrdinalIgnoreCase))) Schede.Add(sheet);
-        SelectedScheda=Schede.FirstOrDefault(x => x.Id == id) ?? Schede.FirstOrDefault();
+        var search=SearchText.Trim();
+        var filtered=_inside.Where(x=>search.Length==0
+            ||x.Posizione.Contains(search,StringComparison.OrdinalIgnoreCase)
+            ||x.Anagrafica.Contains(search,StringComparison.OrdinalIgnoreCase)
+            ||x.NumeroTessera.Contains(search,StringComparison.OrdinalIgnoreCase)
+            ||x.Note.Contains(search,StringComparison.OrdinalIgnoreCase));
+        var ordered=OrderElenco(filtered).ToArray();Schede.Clear();
+        foreach(var sheet in ordered)Schede.Add(sheet);
+        SelectedScheda=Schede.FirstOrDefault(x=>x.Id==id)??Schede.FirstOrDefault();
         this.RaisePropertyChanged(nameof(ResultText));
     }
     private async Task OpenSelected()
@@ -476,7 +493,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
     {
         _page=page;
         foreach (var name in new[]{nameof(IsPostazione),nameof(IsEntry),nameof(IsList),nameof(IsAcquistoAbbonamento),nameof(IsSospesi),nameof(IsUscita),nameof(IsStoricoFidelity)}) this.RaisePropertyChanged(name);
-        RefreshEntry(); RefreshAbbonamento(); RefreshUscita();
+        RefreshNavigation(); RefreshEntry(); RefreshAbbonamento(); RefreshUscita();
     }
     private async Task Back()
         {
@@ -488,7 +505,7 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
     }
     private async Task BackToMenu()
     {
-        if (_busy || _isClosing) return;
+        if (!CanBackToMenu) return;
         _busy = true; IsWaiting = true; WaitMessage = "CHIUSURA RICEZIONE TESSERE..."; Refresh();
         await StopReceiver();
         if (_isClosing) return;
@@ -514,11 +531,18 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
         else if (HasSheet || !string.IsNullOrEmpty(Posizione)) await ClearSheet();
         else await BackToMenu();
     }
+    private void RefreshNavigation()
+    {
+        _menuReady.Value=CanBackToMenu;
+        this.RaisePropertyChanged(nameof(CanBackToMenu));
+        this.RaisePropertyChanged(nameof(CanEditSheet));
+        this.RaisePropertyChanged(nameof(CanSetBloccoScheda));
+    }
     private void Refresh()
     {
         if (_isClosing) return;
-        _ready.Value=IsUiReady; RefreshEntry(); RefreshAbbonamento(); RefreshUscita();
-        this.RaisePropertyChanged(nameof(IsBusy)); this.RaisePropertyChanged(nameof(IsUiReady));
+        _ready.Value=IsUiReady; RefreshNavigation(); RefreshEntry(); RefreshAbbonamento(); RefreshUscita();
+        this.RaisePropertyChanged(nameof(IsBusy)); this.RaisePropertyChanged(nameof(IsUiReady));this.RaisePropertyChanged(nameof(CanEditSheet));this.RaisePropertyChanged(nameof(CanSetBloccoScheda));
     }
     private void RefreshEntry()
     {
@@ -536,14 +560,14 @@ public sealed partial class CassaViewModel : ViewModelBase, ICassaViewModel
         foreach (var command in _commands) command.Dispose();
         DisposeAbbonamento();
         DisposeSospesi();ApriStoricoFidelityCommand.Dispose();CercaStoricoFidelityCommand.Dispose();MovimentiFidelity.Clear();
-        SelezionaBollinoCommand.Dispose();AbbonamentiIngresso.Clear();AttivaFidelityCommand.Dispose();IngressoFidelityCommand.Dispose();TipiFidelity.Clear();
-        DisposeUscita();
+        SelezionaBollinoCommand.Dispose();AbbonamentiIngresso.Clear();AttivaFidelityCommand.Dispose();IngressoFidelityCommand.Dispose();TimbraERegistraIngressoCommand.Dispose();TipiFidelity.Clear();
+        DisposeUscita();OrdinaSociCommand.Dispose();SetBloccoSchedaCommand.Dispose();PagaTuttoCommand.Dispose();_payAllReady.Dispose();
         AddChargeCommand.Dispose(); VociSpesa.Clear();
         SetPagamentoCommand.Dispose();
         StornaContoCommand.Dispose();
         SortContoCommand.Dispose();
         SettoriSpesa = []; _selectedSettoreSpesa = null;
-        _ready.Dispose(); _entryReady.Dispose(); _toMenu.Dispose();
+        _ready.Dispose(); _entryReady.Dispose(); _menuReady.Dispose(); _toMenu.Dispose();
         Conto.Clear(); Ingressi.Clear(); Schede.Clear(); _inside=[]; _occupied=[];
         _sheet=null; _member=null; _selected=null;
         base.OnFinalDestruction();

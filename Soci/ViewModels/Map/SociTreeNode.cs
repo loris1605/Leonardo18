@@ -15,7 +15,7 @@ public sealed class SociTreeNode(SociNodeKind kind, SociPersonMap row)
     public bool IsExpanded { get; set; } = false;
     public bool IsGroup => Kind != SociNodeKind.Tessera;
     public string Label => Kind switch {
-        SociNodeKind.Person => $"{Row.Cognome} {Row.Nome} — {Row.NatoilText}",
+        SociNodeKind.Person => $"{Row.Cognome} {Row.Nome} — {Row.NatoilText}" + (Row.Bloccato ? " · BLOCCATO" : ""),
         SociNodeKind.Socio => $"Codice socio: {Row.NumeroSocio}",
         _ => "Tessera" };
     public string NumeroTessera => Kind == SociNodeKind.Tessera ? Row.NumeroTessera : "";

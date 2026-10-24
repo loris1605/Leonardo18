@@ -124,14 +124,18 @@ internal static class UscitaChecks
     {
         var fake=new Fake();var vm=new CassaViewModel(new Screen(),fake,100);var view=new CassaView{ViewModel=vm};var window=new Window{Width=1200,Height=800,Content=view};window.Show();Dispatcher.UIThread.RunJobs();
         Check(view.GetVisualDescendants().OfType<ControlStyles.UiIconButton>().Any(x=>x.XLabel=="ESCE SOCIO"&&x.IsEffectivelyVisible),"Pulsante Esce Socio presente in CassaPostazione");
-        Command(vm.EsceSocioCommand);Check(vm.IsUscita&&!((System.Windows.Input.ICommand)vm.IncassaUscitaCommand).CanExecute(null),"Sezione uscita richiede identificazione della scheda");
+        Check(!vm.CanEsceSocio&&!((System.Windows.Input.ICommand)vm.EsceSocioCommand).CanExecute(null),"Esce Socio disattivato senza scheda aperta");
+        vm.Posizione="E01";Check(!vm.CanEsceSocio,"Digitare la posizione non abilita Esce Socio senza aprire la scheda");
+        Command(vm.OpenSheetCommand);Check(vm.CanEsceSocio&&((System.Windows.Input.ICommand)vm.EsceSocioCommand).CanExecute(null),"Aprire la scheda abilita Esce Socio");
+        Command(vm.ClearSheetCommand);Check(!vm.CanEsceSocio,"Chiudere la scheda disattiva Esce Socio");
+        vm.Posizione="E01";Command(vm.OpenSheetCommand);Command(vm.EsceSocioCommand);Check(vm.IsUscita&&vm.HasSocioUscita,"Esce Socio usa la scheda già aperta");
         vm.PosizioneUscita="E01";Command(vm.CercaUscitaCommand);Check(vm.DaPagareUscita==5&&vm.ContoUscita.Count==2&&((System.Windows.Input.ICommand)vm.SospendiUscitaCommand).CanExecute(null),"Riepilogo e comandi incasso/sospeso abilitati");
         foreach(var size in new[]{(1200,800),(900,650)}){window.Width=size.Item1;window.Height=size.Item2;Dispatcher.UIThread.RunJobs();using var frame=window.CaptureRenderedFrame();var folder=Path.Combine(AppContext.BaseDirectory,"..","..","..","previews");Directory.CreateDirectory(folder);frame!.Save(Path.Combine(folder,$"uscita-socio-{size.Item1}.png"),Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);}
         fake.OmitConfirmation=true;Command(vm.IncassaUscitaCommand);var key=fake.Last!.UscitaId;
         Check(!vm.UscitaConfermata&&vm.InfoLabel.Contains("Conferma"),"Conferma assente mantiene il riepilogo per una riprova sicura");
         Command(vm.IncassaUscitaCommand);Check(vm.UscitaConfermata&&fake.Last!.UscitaId==key&&fake.Commits==1&&!vm.HasSheet,"Riprova conserva il codice e libera la Scheda una sola volta");
         Check(!((System.Windows.Input.ICommand)vm.IncassaUscitaCommand).CanExecute(null),"Conferma disabilitata dopo l'uscita");
-        Command(vm.BackCommand);Command(vm.EsceSocioCommand);vm.TesseraUscita="T101";Command(vm.CercaUscitaCommand);Command(vm.SospendiUscitaCommand);
+        Command(vm.BackCommand);Check(!vm.CanEsceSocio,"Uscita completata disabilita Esce Socio");vm.Posizione="E01";Command(vm.OpenSheetCommand);Command(vm.EsceSocioCommand);vm.TesseraUscita="T101";Command(vm.CercaUscitaCommand);Command(vm.SospendiUscitaCommand);
         Check(vm.UscitaConfermata&&fake.Last is {Pagato:false}&&vm.AvvisoUscita.Contains(5m.ToString("N2")),"Uscita con sospeso mostra il debito lasciato");
         Command(vm.BackCommand);Check(vm.IsPostazione,"Ritorno alla Scheda dopo l'uscita");window.Close();Dispatcher.UIThread.RunJobs();
     }

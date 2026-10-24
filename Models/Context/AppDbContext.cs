@@ -95,6 +95,7 @@ namespace Models.Context
             modelBuilder.Entity<Person>().Property(p => p.FirstName).HasMaxLength(50);
             modelBuilder.Entity<Person>().Property(p => p.SurName).HasMaxLength(50);
             modelBuilder.Entity<Person>().Property(p => p.UniqueParam).HasMaxLength(14);
+            modelBuilder.Entity<Person>().Property(p => p.BloccoSocioMotivo).HasMaxLength(1000);
 
             ////Relazione con Operatore
             //modelBuilder.Entity<Person>()
@@ -431,7 +432,10 @@ namespace Models.Context
         }
         private static void GiornataConfig(ModelBuilder modelBuilder)
         {
-
+            var day=modelBuilder.Entity<Giornata>();
+            day.Property(x=>x.CassaIniziale).HasPrecision(18,2).HasColumnType("decimal(18,2)");
+            day.Property(x=>x.ConteggioCassaIniziale).HasMaxLength(2000).IsRequired();
+            day.HasIndex(x=>x.AperturaId).IsUnique().HasFilter("[AperturaId] IS NOT NULL");
         }
         private static void SchedaConfig(ModelBuilder modelBuilder)
         {

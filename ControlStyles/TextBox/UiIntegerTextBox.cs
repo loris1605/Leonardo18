@@ -4,6 +4,13 @@ namespace ControlStyles
 {
     public class UiIntegerTextBox : UiTextBox
     {
+        protected override void OnLostFocus(FocusChangedEventArgs e)
+        {
+            if(string.IsNullOrWhiteSpace(Text))
+                SetCurrentValue(TextProperty,"0");
+            base.OnLostFocus(e);
+        }
+
         protected override void OnTextInput(TextInputEventArgs e)
         {
             if (!string.IsNullOrEmpty(e.Text) &&

@@ -24,6 +24,9 @@ public sealed class ReportResult
     public ReportRiepilogo[] Postazioni { get; set; }=[];
     public ReportVoce[] Voci { get; set; }=[];
     public ReportContabilita[] Contabilita { get; set; }=[];
+    public decimal CassaIniziale { get; set; }
+    public TaglioEuro[] TagliCassaIniziale { get; set; }=[];
+    public decimal DisponibilitaMonetaria=>CassaIniziale+SaldoMonetario;
     public decimal Incassi { get; set; }
     public decimal UsciteMonetarie { get; set; }
     public decimal Ricavi { get; set; }

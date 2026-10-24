@@ -5,6 +5,19 @@
   <ui:UiTitolo Text="{Binding Titolo}" SubTitolo="True" FontSize="19" HorizontalAlignment="Center"/>
   <TextBlock Text="{Binding ContextText}" Foreground="White" TextAlignment="Center" TextWrapping="Wrap"/>
   <StackPanel Spacing="10" IsEnabled="{Binding FieldsEnabled}">
+   <StackPanel IsVisible="{Binding BloccoFields}" Spacing="10">
+    <CheckBox Content="SOCIO BLOCCATO" Foreground="White" IsChecked="{Binding BloccoSocio,Mode=TwoWay}"/>
+    <TextBlock Text="Togli la selezione e salva per sbloccare il socio." Foreground="White" TextWrapping="Wrap"/>
+    <CheckBox Content="A TEMPO INDETERMINATO" Foreground="White" IsChecked="{Binding BloccoIndeterminato,Mode=TwoWay}" IsEnabled="{Binding BloccoSocio}"/>
+    <StackPanel IsVisible="{Binding BloccoTemporaneo}" IsEnabled="{Binding BloccoSocio}" Spacing="6">
+     <TextBlock Text="BLOCCATO FINO AL (COMPRESO)" Foreground="White"/>
+     <DatePicker SelectedDate="{Binding BloccoFinoOffset,Mode=TwoWay}"/>
+    </StackPanel>
+    <TextBlock Text="MOTIVAZIONE" Foreground="White"/>
+    <ui:UiTextBox x:Name="BloccoMotivoInput" Text="{Binding BloccoMotivo,Mode=TwoWay}" MaxLength="1000" AcceptsReturn="True" TextWrapping="Wrap" Height="170" VerticalContentAlignment="Top" MoveToNextOnEnter="False"/>
+    <TextBlock Text="{Binding CaratteriBlocco}" Foreground="White" HorizontalAlignment="Right"/>
+    <TextBlock Text="Il blocco impedisce ingressi, rientri, acquisti di abbonamenti e attivazioni Fidelity con tutte le tessere del socio." Foreground="White" TextWrapping="Wrap"/>
+   </StackPanel>
    <Grid ColumnDefinitions="130,*" RowDefinitions="Auto,Auto,Auto" IsVisible="{Binding PersonFields}">
     <ui:UiLabelForGrid FontSize="16" Text="COGNOME:"/>
     <ui:UiTextBox x:Name="CognomeInput" Grid.Column="1" Text="{Binding Cognome, Mode=TwoWay}" MaxLength="50" Margin="0,4"/>

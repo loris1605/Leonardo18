@@ -14,6 +14,8 @@ public sealed class StrisciateReceiver(int port = 5000) : IAsyncDisposable
     private CancellationTokenSource? _receiving;
     private string? _session;
     private bool _disposed;
+    private sealed class PendingCard { public string Number=""; }
+    private PendingCard? _pendingCard;
     public string? Endpoint => _application?.Urls.SingleOrDefault();
 
     public async Task<string> StartAsync(string session, IStrisciateSink sink, CancellationToken ct = default)
@@ -38,6 +40,7 @@ public sealed class StrisciateReceiver(int port = 5000) : IAsyncDisposable
             var app = builder.Build();
             var receiving = new CancellationTokenSource();
             var requests = new SemaphoreSlim(1, 1);
+            var pendingCard = new PendingCard();
             app.MapGet("/update", async (HttpContext context) => {
                 context.Response.ContentType = "text/plain; charset=utf-8";
                 if (!StrisciataInput.TryParse(context.Request.Query, out var input, out var error))
@@ -48,6 +51,7 @@ public sealed class StrisciateReceiver(int port = 5000) : IAsyncDisposable
                 {
                     await requests.WaitAsync(linked.Token); acquired = true;
                     await sink.InsertAsync(input!, linked.Token);
+                    Interlocked.Exchange(ref pendingCard.Number,input!.NumeroTessera);
                     await context.Response.WriteAsync("OK", context.RequestAborted);
                 }
                 catch (OperationCanceledException) when (linked.IsCancellationRequested)
@@ -71,8 +75,19 @@ public sealed class StrisciateReceiver(int port = 5000) : IAsyncDisposable
             }
             catch
             { receiving.Cancel(); receiving.Dispose(); await app.DisposeAsync(); throw; }
-            _application = app; _receiving = receiving; _session = session;
+            _application = app; _receiving = receiving; _session = session; _pendingCard = pendingCard;
             return Endpoint ?? throw new InvalidOperationException("Indirizzo di ricezione non disponibile.");
+        }
+        finally { _lifecycle.Release(); }
+    }
+
+    public async Task<string> TakeImportedCardAsync(string session,CancellationToken ct=default)
+    {
+        await _lifecycle.WaitAsync(ct);
+        try
+        {
+            return _session==session && _pendingCard is {} pending
+                ? Interlocked.Exchange(ref pending.Number,"") : "";
         }
         finally { _lifecycle.Release(); }
     }
@@ -91,7 +106,7 @@ public sealed class StrisciateReceiver(int port = 5000) : IAsyncDisposable
     private async Task StopCore()
     {
         var app = _application; var receiving = _receiving;
-        _application = null; _receiving = null; _session = null;
+        _application = null; _receiving = null; _session = null; _pendingCard = null;
         receiving?.Cancel();
         if (app is not null)
         {

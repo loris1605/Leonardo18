@@ -8,7 +8,7 @@
      <Grid x:Name="HeaderGrid" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="8">
       <ui:UiTitolo x:Name="TitleControl" Text="{Binding Title}" SubTitolo="True" FontSize="22" VerticalAlignment="Center"/>
       <ui:UiIconButton x:Name="MenuButton" Grid.Column="1" XLabel="TORNA AL MENU" IconSymbol="Home" IconVariant="Color"
-       AutomationProperties.Name="Torna al menu" Command="{Binding MenuCommand}" Padding="12,8"/>
+       AutomationProperties.Name="Torna al menu" Command="{Binding MenuCommand}" IsEnabled="{Binding CanBackToMenu}" Padding="12,8"/>
      </Grid>
      <TextBlock Grid.Row="1" Text="{Binding ReceiverStatus}" Foreground="White" FontSize="13"/>
      <Grid Grid.Row="2" IsVisible="{Binding !IsBusy}" IsEnabled="{Binding IsUiReady}">
@@ -16,7 +16,7 @@
        <WrapPanel>
         <ui:UiIconButton XLabel="ENTRA SOCIO" IconSymbol="PersonAdd" IconVariant="Color" AutomationProperties.Name="Entra socio"
          Command="{Binding EntraSocioCommand}" Padding="12,8" Margin="0,0,10,8"/>
-        <ui:UiIconButton XLabel="ESCE SOCIO" IconSymbol="ArrowRight" IconVariant="Filled" AutomationProperties.Name="Esce socio" Command="{Binding EsceSocioCommand}" Padding="12,8" Margin="0,0,10,8"/>
+        <ui:UiIconButton XLabel="ESCE SOCIO" IconSymbol="ArrowRight" IconVariant="Filled" AutomationProperties.Name="Esce socio" Command="{Binding EsceSocioCommand}" IsEnabled="{Binding CanEsceSocio}" Padding="12,8" Margin="0,0,10,8"/>
         <ui:UiIconButton XLabel="SOCI ALL'INTERNO" IconSymbol="PeopleTeam" IconVariant="Color" AutomationProperties.Name="Soci all'interno"
          Command="{Binding ListaSociCommand}" Padding="12,8" Margin="0,0,10,8"/>
         <ui:UiIconButton XLabel="ABBONAMENTI" IconSymbol="TicketDiagonal" IconVariant="Filled" AutomationProperties.Name="Acquisto abbonamenti" ToolTip.Tip="{Binding AvvisoAcquistoAbbonamenti}"
@@ -47,10 +47,11 @@
             <TextBlock Text="{Binding Sheet.Note}" TextWrapping="Wrap"/>
           <WrapPanel IsVisible="{Binding Sheet.HasSospesi}"><TextBlock Text="{Binding Sheet.AvvisoSospesi}" Foreground="#9A3412" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,12,0"/>
            <ui:UiIconButton XLabel="VEDI SOSPESI" IconSymbol="Clipboard" IconVariant="Color" Command="{Binding ApriSospesiSocioCommand}" CommandParameter="{Binding Sheet.NumeroTessera}" Padding="8,4"/></WrapPanel>
-          <TextBlock Text="TESSERA BLOCCATA" Foreground="#A02020" IsVisible="{Binding Sheet.Blocco}"/>
+          <TextBlock Text="SCHEDA BLOCCATA · inserimenti e modifiche impediti in tutte le postazioni" FontWeight="Bold" Foreground="#A02020" TextWrapping="Wrap" IsVisible="{Binding Sheet.Blocco}"/>
+          <ui:UiIconButton x:Name="SheetLockButton" XLabel="{Binding BloccoSchedaLabel}" IconSymbol="LockClosed" IconVariant="Filled" Command="{Binding SetBloccoSchedaCommand}" IsEnabled="{Binding CanSetBloccoScheda}" Padding="10,6" HorizontalAlignment="Left" AutomationProperties.Name="Blocca o sblocca scheda"/>
          </StackPanel>
         </Border>
-        <views:GuardarobaControl x:Name="GuardarobaPanel" Grid.Row="1" VerticalAlignment="Top"/>
+        <views:GuardarobaControl x:Name="GuardarobaPanel" IsEnabled="{Binding CanEditSheet}" Grid.Row="1" VerticalAlignment="Top"/>
         <Grid x:Name="SheetAccount" Grid.Row="1" Grid.Column="1" RowDefinitions="Auto,*,Auto" RowSpacing="10" IsEnabled="{Binding !IsPaymentBusy}">
         <TextBlock Text="DETTAGLIO CONTO" Foreground="White" FontWeight="Bold"/>
         <Border Grid.Row="1" Background="#F4F7FA" CornerRadius="8" Padding="12">
@@ -91,7 +92,7 @@
                 <TextBlock Grid.Column="2" Text="{Binding DescSettore}" TextWrapping="Wrap"/>
                 <TextBlock Grid.Column="3" Text="{Binding VoiceDesc}" TextWrapping="Wrap"/>
                 <TextBlock Grid.Column="4" Text="{Binding VoicePrice, StringFormat='{}{0:0.00} €'}"/>
-                <CheckBox Grid.Column="5" IsChecked="{Binding Pagato, Mode=OneWay}" Content="{Binding Stato}"
+                <CheckBox Grid.Column="5" IsEnabled="{Binding $parent[UserControl].((vm:CassaViewModel)DataContext).CanEditSheet}" IsChecked="{Binding Pagato, Mode=OneWay}" Content="{Binding Stato}"
                  Command="{Binding $parent[UserControl].((vm:CassaViewModel)DataContext).SetPagamentoCommand}"
                  CommandParameter="{Binding}" ToolTip.Tip="Seleziona per cambiare lo stato del pagamento"
                  AutomationProperties.Name="{Binding VoiceDesc, StringFormat='Pagamento: {0}'}"/>
@@ -106,10 +107,11 @@
         </Border>
         <WrapPanel Grid.Row="2">
          <TextBlock Text="{Binding Totale, StringFormat='Totale: {0:0.00} €'}" Foreground="White" FontWeight="Bold" Margin="0,0,24,0"/>
-         <TextBlock Text="{Binding DaPagare, StringFormat='Da pagare: {0:0.00} €'}" Foreground="White" FontWeight="Bold"/>
+         <TextBlock Text="{Binding DaPagare, StringFormat='Da pagare: {0:0.00} €'}" Foreground="White" FontWeight="Bold" Margin="0,0,20,8"/>
+         <ui:UiIconButton x:Name="PayAllButton" XLabel="PAGA TUTTE LE VOCI" IconSymbol="Save" IconVariant="Filled" Command="{Binding PagaTuttoCommand}" IsEnabled="{Binding CanPagaTutto}" Padding="12,8" AutomationProperties.Name="Paga tutte le voci del conto"/>
         </WrapPanel>
         </Grid>
-        <Grid x:Name="SheetCharges" Grid.Row="1" Grid.Column="2" RowDefinitions="Auto,Auto,*" RowSpacing="10">
+        <Grid x:Name="SheetCharges" IsEnabled="{Binding CanEditSheet}" Grid.Row="1" Grid.Column="2" RowDefinitions="Auto,Auto,*" RowSpacing="10">
          <TextBlock Text="VOCI DI SPESA" Foreground="White" FontWeight="Bold"/>
          <StackPanel Grid.Row="1"><TextBlock Text="Seleziona una voce per addebitarla al conto." Foreground="White" TextWrapping="Wrap"/>
           <CheckBox Content="{Binding CreditoFidelityLabel}" Foreground="White" IsChecked="{Binding UsaCreditoFidelity,Mode=TwoWay}" IsVisible="{Binding HasCreditoFidelity}"/>
@@ -169,6 +171,7 @@
        </WrapPanel>
        <Border IsVisible="{Binding HasMember}" Background="#F4F7FA" CornerRadius="8" Padding="14">
         <StackPanel Spacing="6">
+         <TextBlock Text="{Binding Member.AvvisoBlocco}" IsVisible="{Binding Member.SocioBloccato}" Foreground="#B42318" FontWeight="Bold" TextWrapping="Wrap"/>
          <TextBlock Text="{Binding Member.Anagrafica}" FontSize="20" FontWeight="SemiBold"/>
          <TextBlock Text="{Binding Rientro.Avviso}" IsVisible="{Binding HasRientro}" Foreground="#166534" FontWeight="Bold" TextWrapping="Wrap"/>
          <TextBlock IsVisible="{Binding Member.HasSospesi}" Text="{Binding Member.AvvisoSospesi}" Foreground="#9A3412" FontWeight="Bold" TextWrapping="Wrap"/>
@@ -271,34 +274,71 @@
       </Grid>
       <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="10" IsVisible="{Binding IsList}">
        <TextBlock Text="SOCI ALL'INTERNO" Foreground="White" FontSize="18" FontWeight="Bold"/>
-       <ui:UiTextBox Grid.Row="1" Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Filtra per posizione, nome o tessera"/>
+       <ui:UiTextBox Grid.Row="1" Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Filtra per posizione, nome, tessera o note"/>
        <Border Grid.Row="2" Background="#F4F7FA" CornerRadius="8" Padding="6">
-        <ListBox x:Name="SociList" ItemsSource="{Binding Schede}" SelectedItem="{Binding SelectedScheda, Mode=TwoWay}"
-         Background="Transparent" AutomationProperties.Name="Soci all'interno">
-         <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="db:CassaScheda">
-           <StackPanel Spacing="4" Margin="4,6">
-            <WrapPanel>
-             <TextBlock Text="{Binding Posizione, StringFormat='Posizione {0}'}" FontWeight="Bold" Margin="0,0,16,0"/>
-             <TextBlock Text="{Binding Anagrafica}" FontWeight="SemiBold"/>
-            </WrapPanel>
-            <WrapPanel>
-             <TextBlock Text="{Binding NumeroTessera, StringFormat='Tessera: {0}'}" Margin="0,0,16,4"/>
-             <TextBlock Text="{Binding Nascita, StringFormat='Nascita: {0}'}" Margin="0,0,16,4"/>
-             <TextBlock Text="{Binding CheckinTime, StringFormat='Ingresso: {0:dd/MM/yyyy HH:mm}'}"/>
-            </WrapPanel>
-            <WrapPanel>
-             <TextBlock Text="{Binding Grb1, StringFormat='Grb 1: {0}'}" Margin="0,0,16,4"/>
-             <TextBlock Text="{Binding Grb2, StringFormat='Grb 2: {0}'}" Margin="0,0,16,4"/>
-             <TextBlock Text="{Binding Grb3, StringFormat='Grb 3: {0}'}" Margin="0,0,16,4"/>
-             <TextBlock Text="{Binding Grb4, StringFormat='Grb 4: {0}'}" Margin="0,0,16,4"/>
-             <TextBlock Text="{Binding Consumazione, StringFormat='Consumazione: {0:0.00} €'}"/>
-            </WrapPanel>
-            <TextBlock Text="BLOCCATO" Foreground="#A02020" IsVisible="{Binding Blocco}"/>
-           </StackPanel>
-          </DataTemplate>
-         </ListBox.ItemTemplate>
-        </ListBox>
+        <ScrollViewer x:Name="ElencoSociScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch">
+         <Grid MinWidth="1400" RowDefinitions="Auto,*">
+          <Grid ColumnDefinitions="80,125,125,105,95,150,50,50,50,50,115,90,180" ColumnSpacing="8" Margin="8,4,8,6">
+           <Grid.Styles>
+            <Style Selector="Button.elencoSort">
+             <Setter Property="Background" Value="Transparent"/>
+             <Setter Property="BorderThickness" Value="0"/>
+             <Setter Property="Padding" Value="0,4"/>
+             <Setter Property="HorizontalAlignment" Value="Stretch"/>
+             <Setter Property="HorizontalContentAlignment" Value="Left"/>
+             <Setter Property="FontWeight" Value="Bold"/>
+             <Setter Property="FontSize" Value="11"/>
+            </Style>
+           </Grid.Styles>
+            <Button x:Name="ElencoSortPosizioneButton" Grid.Column="0" Classes="elencoSort" Content="{Binding ElencoPosizioneHeader}" Command="{Binding OrdinaSociCommand}" CommandParameter="Posizione" AutomationProperties.Name="Ordina soci per posizione"/>
+            <Button x:Name="ElencoSortCognomeButton" Grid.Column="1" Classes="elencoSort" Content="{Binding ElencoCognomeHeader}" Command="{Binding OrdinaSociCommand}" CommandParameter="Cognome" AutomationProperties.Name="Ordina soci per cognome"/>
+            <Button x:Name="ElencoSortNomeButton" Grid.Column="2" Classes="elencoSort" Content="{Binding ElencoNomeHeader}" Command="{Binding OrdinaSociCommand}" CommandParameter="Nome" AutomationProperties.Name="Ordina soci per nome"/>
+            <Button x:Name="ElencoSortNumeroTesseraButton" Grid.Column="3" Classes="elencoSort" Content="{Binding ElencoNumeroTesseraHeader}" Command="{Binding OrdinaSociCommand}" CommandParameter="NumeroTessera" AutomationProperties.Name="Ordina soci per tessera"/>
+            <Button x:Name="ElencoSortNatoilButton" Grid.Column="4" Classes="elencoSort" Content="{Binding ElencoNatoilHeader}" Command="{Binding OrdinaSociCommand}" CommandParameter="Natoil" AutomationProperties.Name="Ordina soci per nascita"/>
+            <Button x:Name="ElencoSortCheckinTimeButton" Grid.Column="5" Classes="elencoSort" Content="{Binding ElencoCheckinTimeHeader}" Command="{Binding OrdinaSociCommand}" CommandParameter="CheckinTime" AutomationProperties.Name="Ordina soci per ingresso"/>
+            <Button x:Name="ElencoSortGrb1Button" Grid.Column="6" Classes="elencoSort" Content="{Binding ElencoGrb1Header}" Command="{Binding OrdinaSociCommand}" CommandParameter="Grb1" AutomationProperties.Name="Ordina soci per grb 1"/>
+            <Button x:Name="ElencoSortGrb2Button" Grid.Column="7" Classes="elencoSort" Content="{Binding ElencoGrb2Header}" Command="{Binding OrdinaSociCommand}" CommandParameter="Grb2" AutomationProperties.Name="Ordina soci per grb 2"/>
+            <Button x:Name="ElencoSortGrb3Button" Grid.Column="8" Classes="elencoSort" Content="{Binding ElencoGrb3Header}" Command="{Binding OrdinaSociCommand}" CommandParameter="Grb3" AutomationProperties.Name="Ordina soci per grb 3"/>
+            <Button x:Name="ElencoSortGrb4Button" Grid.Column="9" Classes="elencoSort" Content="{Binding ElencoGrb4Header}" Command="{Binding OrdinaSociCommand}" CommandParameter="Grb4" AutomationProperties.Name="Ordina soci per grb 4"/>
+            <Button x:Name="ElencoSortConsumazioneButton" Grid.Column="10" Classes="elencoSort" Content="{Binding ElencoConsumazioneHeader}" Command="{Binding OrdinaSociCommand}" CommandParameter="Consumazione" AutomationProperties.Name="Ordina soci per consumazione"/>
+            <Button x:Name="ElencoSortBloccoButton" Grid.Column="11" Classes="elencoSort" Content="{Binding ElencoBloccoHeader}" Command="{Binding OrdinaSociCommand}" CommandParameter="Blocco" AutomationProperties.Name="Ordina soci per blocco"/>
+            <Button x:Name="ElencoSortNoteButton" Grid.Column="12" Classes="elencoSort" Content="{Binding ElencoNoteHeader}" Command="{Binding OrdinaSociCommand}" CommandParameter="Note" AutomationProperties.Name="Ordina soci per note"/>
+          </Grid>
+          <ListBox x:Name="SociList" Grid.Row="1" ItemsSource="{Binding Schede}" SelectedItem="{Binding SelectedScheda,Mode=TwoWay}"
+           Background="Transparent" Padding="0" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+           ScrollViewer.VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Soci all'interno">
+           <ListBox.Styles>
+            <Style Selector="ListBoxItem">
+             <Setter Property="Padding" Value="8,3"/>
+             <Setter Property="Margin" Value="0"/>
+             <Setter Property="MinHeight" Value="28"/>
+             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            </Style>
+           </ListBox.Styles>
+           <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="db:CassaScheda">
+             <Grid ColumnDefinitions="80,125,125,105,95,150,50,50,50,50,115,90,180" ColumnSpacing="8" Height="24">
+              <TextBlock Grid.Column="0" Text="{Binding Posizione}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Posizione}"/>
+              <TextBlock Grid.Column="1" Text="{Binding Cognome}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Cognome}"/>
+              <TextBlock Grid.Column="2" Text="{Binding Nome}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Nome}"/>
+              <TextBlock Grid.Column="3" Text="{Binding NumeroTessera}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding NumeroTessera}"/>
+              <TextBlock Grid.Column="4" Text="{Binding Nascita}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Nascita}"/>
+              <TextBlock Grid.Column="5" Text="{Binding CheckinTime, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding CheckinTime}"/>
+              <TextBlock Grid.Column="6" Text="{Binding Grb1}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Grb1}"/>
+              <TextBlock Grid.Column="7" Text="{Binding Grb2}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Grb2}"/>
+              <TextBlock Grid.Column="8" Text="{Binding Grb3}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Grb3}"/>
+              <TextBlock Grid.Column="9" Text="{Binding Grb4}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Grb4}"/>
+              <TextBlock Grid.Column="10" Text="{Binding Consumazione, StringFormat='{}{0:0.00} €'}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Consumazione}"/>
+              <Viewbox Grid.Column="11" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+               <CheckBox IsChecked="{Binding Blocco,Mode=OneWay}" IsHitTestVisible="False" Focusable="False" AutomationProperties.Name="Scheda bloccata"/>
+              </Viewbox>
+              <TextBlock Grid.Column="12" Text="{Binding Note}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Note}"/>
+             </Grid>
+            </DataTemplate>
+           </ListBox.ItemTemplate>
+          </ListBox>
+         </Grid>
+        </ScrollViewer>
        </Border>
        <TextBlock Grid.Row="3" Text="{Binding ResultText}" Foreground="White"/>
        <WrapPanel Grid.Row="4">

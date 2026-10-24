@@ -77,16 +77,18 @@ public sealed partial class CassaViewModel
         {
             if(_buyType is null)return "Seleziona un tipo di abbonamento attivo.";
             if(_buyMember1 is null || _buyMember1.NumeroTessera!=TesseraAbbonamento1.Trim())return "Identifica la tessera del primo socio.";
+            if(_buyMember1.SocioBloccato)return _buyMember1.AvvisoBlocco;
             if(!ValidPurchaseMember(_buyMember1))return "La tessera del primo socio è scaduta o non abilitata.";
             if(SecondoSocioAbbonamento){
                 if(_buyMember2 is null || _buyMember2.NumeroTessera!=TesseraAbbonamento2.Trim())return "Identifica la tessera del secondo socio.";
+                if(_buyMember2.SocioBloccato)return _buyMember2.AvvisoBlocco;
                 if(!ValidPurchaseMember(_buyMember2))return "La tessera del secondo socio è scaduta o non abilitata.";
                 if(_buyMember1.PersonId==_buyMember2.PersonId)return "Le due tessere devono appartenere a soci distinti.";
             }
             return "";
         }
     }
-    private static bool ValidPurchaseMember(CassaSocio member)=>member.PersonId>0&&!member.Blocco&&
+    private static bool ValidPurchaseMember(CassaSocio member)=>member.PersonId>0&&!member.Blocco&&!member.SocioBloccato&&
         DateTime.TryParseExact(member.ScadenzaTessera.ToString("D8"),"yyyyMMdd",System.Globalization.CultureInfo.InvariantCulture,System.Globalization.DateTimeStyles.None,out var expiry)&&expiry>=DateTime.Today;
     public ReactiveCommand<RxVoid,RxVoid> AcquistaAbbonamentoCommand {get;private set;}=null!;
     public ReactiveCommand<RxVoid,RxVoid> AggiornaTipiAbbonamentoCommand {get;private set;}=null!;

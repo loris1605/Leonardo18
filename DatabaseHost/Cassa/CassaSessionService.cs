@@ -24,6 +24,8 @@ public sealed class CassaSessionService(StrisciateReceiver receiver, Func<string
             var sink = new StrisciateDatabaseSink(() => contextFactory(request.ConnectionString), request.OperatorId, payload.PostazioneId);
             result.StrisciateEndpoint = await receiver.StartAsync(payload.StrisciateSessionId, sink, ct);
         }
+        if(payload.Action==CassaAction.PrepareEntry)
+            result.TesseraImportata=await receiver.TakeImportedCardAsync(payload.StrisciateSessionId,ct);
         return result;
     }
 }

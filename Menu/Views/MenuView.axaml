@@ -1,10 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- xmlns:ui="using:ControlStyles" xmlns:vm="using:Menu.ViewModels" xmlns:map="using:Menu.ViewModels.Map"
+ xmlns:views="using:Menu.Views" xmlns:ui="using:ControlStyles" xmlns:vm="using:Menu.ViewModels" xmlns:map="using:Menu.ViewModels.Map"
  x:Class="Menu.Views.MenuView" x:DataType="vm:MenuViewModel" Background="LightSteelBlue">
  <Grid Margin="24">
   <ui:PopupBorder HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="960"
     Padding="24" IsVisible="{Binding !IsBusy}">
-   <StackPanel Spacing="18">
+   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
+   <Grid>
+   <StackPanel Spacing="18" IsVisible="{Binding !IsOpeningCash}">
     <ui:UiTitolo Text="Leonardo18 - MENU PRINCIPALE" SubTitolo="True" FontSize="22" HorizontalAlignment="Center"/>
     <TextBlock Text="{Binding OperatoreName}" Foreground="White" TextAlignment="Center"/>
     <StackPanel Spacing="12" IsVisible="{Binding IsMenuReady}">
@@ -29,6 +31,17 @@
       <ui:UiIconButton XLabel="REPORT" IconSymbol="ChartMultiple" IconVariant="Color" AutomationProperties.Name="REPORT" Command="{Binding ReportCommand}" IsVisible="{Binding ReportVisible}" Padding="18,10"/>
      </StackPanel>
      <TextBlock Text="{Binding SessioneContabile}" Foreground="White" TextAlignment="Center"/>
+     <Border BorderBrush="#8CA3B9" BorderThickness="1" CornerRadius="8" Padding="10" IsVisible="{Binding MirrorVisible}">
+      <StackPanel Spacing="8">
+       <TextBlock Text="{Binding MirrorMessage}" Foreground="White" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="750"/>
+       <TextBlock Text="{Binding MirrorCode}" Foreground="#FFE59A" FontWeight="Bold" TextAlignment="Center" IsVisible="{Binding HasMirrorCode}"/>
+       <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+        <Button Content="SINCRONIZZA MIRROR" Command="{Binding SincronizzaMirrorCommand}"/>
+        <Button Content="COLLEGA MIRROR" Command="{Binding CollegaMirrorCommand}" IsVisible="{Binding AmministratoreVisible}"/>
+        <Button Content="APRI ACCESSO MICROSOFT" Command="{Binding ApriAccessoMirrorCommand}" IsVisible="{Binding HasMirrorCode}"/>
+       </StackPanel>
+      </StackPanel>
+     </Border>
     </StackPanel>
     <TextBlock Text="{Binding InfoError}" Foreground="White" MaxWidth="700" TextWrapping="Wrap" TextAlignment="Center"/>
     <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
@@ -36,6 +49,9 @@
      <ui:UiIconButton XLabel="CAMBIA OPERATORE" IconSymbol="PersonKey" IconVariant="Color" AutomationProperties.Name="CAMBIA OPERATORE" Command="{Binding LogoutCommand}" Padding="18,10"/>
     </StackPanel>
    </StackPanel>
+   <views:CassaInizialeView IsVisible="{Binding IsOpeningCash}"/>
+   </Grid>
+   </ScrollViewer>
   </ui:PopupBorder>
   <Grid HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsBusy}" IsHitTestVisible="False">
    <ui:UiWaitIndicator Diameter="264" IsActive="{Binding IsBusy}" RotationSpeed="1.2"/>

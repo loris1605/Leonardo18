@@ -99,7 +99,7 @@ internal static class ReportChecks
         var fake=new Fake();var printer=new PrintFake();var vm=new ReportViewModel(new Screen(),fake,printer);var view=new ReportView{ViewModel=vm};var window=new Window{Width=1200,Height=800,Content=view};
         window.Show();Dispatcher.UIThread.RunJobs();
         Check(vm.HasData&&vm.Giornate.Count==2&&vm.Data.TotaleOperativo==21,"Schermata report caricata");
-        Check(view.GetVisualDescendants().OfType<TabItem>().Count()==5,"Report con sezioni settori, voci, postazioni, contabilità e sospesi");
+        Check(view.GetVisualDescendants().OfType<TabItem>().Count()==6,"Report con sezioni settori, voci, postazioni, contabilità e sospesi");
         Check(vm.CanPrint,"Stampa disponibile solo con dati caricati");
         vm.SelectedGiornata=vm.Giornate.Last();Execute(vm.PrintCommand);
         Check(printer.Last?.GiornataId==101&&fake.LastId==0,"Stampa copia la giornata visualizzata senza rileggere né usare la selezione non caricata");

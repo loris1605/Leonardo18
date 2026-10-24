@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ui="using:ControlStyles" xmlns:vm="using:Menu.ViewModels"
+ x:Class="Menu.Views.CassaInizialeView" x:DataType="vm:MenuViewModel" KeyboardNavigation.TabNavigation="Cycle">
+ <Grid RowDefinitions="Auto,Auto,*,Auto,Auto,Auto" RowSpacing="12" MinWidth="440" MaxHeight="720">
+  <StackPanel Spacing="6"><ui:UiTitolo Text="APERTURA GIORNATA" SubTitolo="True" FontSize="22"/>
+   <TextBlock Text="CASSA INIZIALE" FontSize="18" FontWeight="Bold" Foreground="White"/>
+   <TextBlock Text="Inserisci la quantità disponibile per ciascun taglio." Foreground="White" TextWrapping="Wrap"/>
+  </StackPanel>
+  <Grid Grid.Row="1" ColumnDefinitions="110,150,140" ColumnSpacing="16" Margin="8,0"><TextBlock Text="TAGLIO €" Foreground="White" FontWeight="Bold"/><TextBlock Grid.Column="1" Text="QUANTITÀ" Foreground="White" FontWeight="Bold"/><TextBlock Grid.Column="2" Text="SUBTOTALE €" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right"/></Grid>
+  <ScrollViewer Grid.Row="2" MaxHeight="440" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Focusable="False" IsTabStop="False">
+   <ItemsControl ItemsSource="{Binding TagliCassa}" IsEnabled="{Binding IsOpeningReady}"><ItemsControl.ItemTemplate>
+    <DataTemplate x:DataType="vm:TaglioCassaViewModel"><Border Padding="8,3" BorderBrush="#406A8095" BorderThickness="0,0,0,1">
+     <Grid ColumnDefinitions="110,150,140" ColumnSpacing="16">
+      <TextBlock Text="{Binding Taglio,StringFormat='{}{0:N2} €'}" Foreground="White" VerticalAlignment="Center"/>
+      <ui:UiIntegerTextBox Grid.Column="1" Text="{Binding Quantita,Mode=TwoWay}" MaxLength="7" Height="32" Padding="6" MoveToNextOnEnter="True" AutomationProperties.Name="{Binding Taglio,StringFormat='Quantità taglio {0:N2} euro'}"/>
+      <TextBlock Grid.Column="2" Text="{Binding Totale,StringFormat='{}{0:N2} €'}" Foreground="White" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+     </Grid>
+    </Border></DataTemplate>
+   </ItemsControl.ItemTemplate></ItemsControl>
+  </ScrollViewer>
+  <Border Grid.Row="3" Background="#F4F7FA" CornerRadius="8" Padding="12"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="TOTALE CASSA INIZIALE" FontWeight="Bold" VerticalAlignment="Center" Foreground="#17334E"/><TextBlock Grid.Column="1" Text="{Binding TotaleCassaIniziale,StringFormat='{}{0:N2} €'}" FontSize="24" FontWeight="Bold" Foreground="#17334E"/></Grid></Border>
+  <TextBlock Grid.Row="4" Text="{Binding InfoError}" Foreground="White" TextWrapping="Wrap" MaxWidth="440"/>
+  <StackPanel Grid.Row="5" Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
+   <ui:UiIconButton IsTabStop="False" XLabel="ANNULLA" IconSymbol="ArrowLeft" Command="{Binding AnnullaAperturaCommand}" Padding="12,8"/>
+   <ui:UiIconButton IsTabStop="False" XLabel="CONFERMA E APRI GIORNATA" IconSymbol="CalendarClock" Command="{Binding ConfermaAperturaCommand}" Padding="12,8"/>
+  </StackPanel>
+ </Grid>
+</UserControl>

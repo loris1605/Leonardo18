@@ -83,3 +83,44 @@ Lo storno di una riga di ingresso, anche a importo zero, aggiunge STORNO - NON E
 Lo stesso annullamento restituisce il bollino abbonamento utilizzato, compensa il timbro Fidelity e restituisce un eventuale ingresso premio Fidelity. I premi denaro maturati senza più il relativo traguardo sono revocati se ancora disponibili; se sono già stati spesi l'operazione viene bloccata senza scritture parziali. La restituzione dello sconto ingresso avviene insieme all'annullamento. Lo storico Fidelity conserva i movimenti originali e quelli di annullamento; la tessera mostra solo i timbri validi.
 
 La migrazione 20261017150000_AnnullaIngresso aggiunge identificazione delle righe ingresso, stato NON ENTRA e collegamento del bollino alla scheda. Riconosce le righe ingresso già presenti tramite settore e data/ora di check-in e recupera i collegamenti degli abbonamenti attivi dalle note generate da Leonardo18. Eseguire l'aggiornamento database dalla schermata Connessione (F5). Nessun aggiornamento del database utente viene eseguito dalle verifiche automatiche.Gli storni ingresso monetari della versione precedente possono essere completati scegliendo nuovamente lo storno sulla riga originale dopo l'aggiornamento: viene aggiornata la riga negativa esistente e annullato il beneficio collegato, senza creare un secondo rimborso contabile. L'annullamento già completo viene invece rifiutato.
+## Blocco e sblocco globale della scheda
+
+Nell'identità della scheda di Cassa è presente BLOCCA SCHEDA / SBLOCCA SCHEDA. Lo stato usa Scheda.Blocco, già esistente e indipendente dall'abilitazione della tessera. Non è necessaria una migrazione.
+
+SetBloccoScheda specifica posizione, identificativo della scheda e stato desiderato: le ripetizioni sono idempotenti, gli identificativi superati e le schede chiuse vengono rifiutati. Servono gli stessi permessi di accesso alla Cassa. Qualunque postazione Cassa autorizzata può sbloccare una scheda.
+
+Il servizio rilegge il blocco nella transazione serializzabile di ogni modifica: addebiti, pagamenti, storni, guardaroba e uscita sono impediti da tutte le postazioni, anche con una schermata aperta prima del blocco. Le letture rimangono consentite. Per aggiornare lo stato visualizzato su un'altra postazione, riaprire la scheda. Il blocco non modifica i dati delle altre schede, della tessera, del conto o della contabilità.
+Esce Socio è disponibile soltanto con una scheda effettivamente aperta nella vista Cassa, non bloccata e non già chiusa. La sola digitazione della posizione non abilita il pulsante. Togliere la scheda dalla vista o confermare l'uscita lo disabilita; aprire una scheda valida lo riabilita. Il comando utilizza la posizione della scheda aperta. Non servono migrazioni aggiuntive.
+## Blocchi disciplinari dei soci
+In Soci, selezionare un'anagrafica, un codice socio o una tessera e usare GESTISCI BLOCCO SOCIO. Il blocco appartiene alla persona e vale per tutti i suoi codici e tessere. SOCIO BLOCCATO abilita il divieto; A TEMPO INDETERMINATO evita la scadenza, altrimenti impostare la data finale, compresa nel periodo di blocco. La motivazione è obbligatoria per un blocco attivo e ammette fino a 1000 caratteri. Per sbloccare togliere SOCIO BLOCCATO e salvare. Dopo la scadenza il divieto cessa automaticamente; motivazione e impostazione precedente restano consultabili nell'editor.
+Cassa mostra il motivo e rifiuta sul database ingressi di ogni tipo (anche rientri, abbonamento e Fidelity), nuovi acquisti di abbonamenti (anche se il bloccato è il secondo intestatario) e attivazioni Fidelity. I controlli vengono ripetuti alla conferma, anche con identificazioni già aperte in altre postazioni. Modifiche anagrafiche e importazioni Strisciate non cancellano il blocco. Il blocco della scheda in Cassa e l'abilitazione della tessera restano funzioni distinte.
+Migrazione aggiuntiva: 20261017193000_BlocchiSoci, tre colonne su People. Applicare gli aggiornamenti del database dalla Connessione (F5) prima di usare questa versione. Nessuna modifica ai blocchi esistenti delle schede e nessun blocco automatico dei soci già registrati.
+
+## Anagrafica in maiuscolo
+Nome e cognome della Person vengono normalizzati in maiuscolo durante l'inserimento, nella validazione e nell'entità condivisa, comprese le importazioni Strisciate. La migrazione 20261017210000_PersonMaiuscolo converte anche i record preesistenti; non modifica codici socio, tessere, blocchi o registrazioni contabili. Su Ulisse l'aggiornamento delle anagrafiche è stato eseguito direttamente e verificato; la migrazione resta idempotente.
+
+## Pagamento totale del conto
+In CassaPostazione, sotto la griglia del conto, PAGA TUTTE LE VOCI salda le righe non pagate con un'unica transazione. Le voci già pagate restano invariate. Gli incassi usano le scritture e gli abbinamenti del pagamento singolo; per le voci pregresse prive di contabilità viene creata prima la relativa partita. Gli storni già riconciliati vengono chiusi senza ulteriori movimenti di cassa; gli storni pregressi vengono abbinati alle voci originarie quando descrizione e importi coincidono. Conti a rimborso o storni non riconciliabili richiedono regolarizzazione prima del pagamento totale.
+Il servizio controlla scheda, blocco, righe visualizzate e importo ancora dovuto. Le richieste ripetute non duplicano incassi; un errore annulla sia i flag sia tutte le scritture della transazione. La scheda resta aperta e il focus ritorna alla posizione. Non richiede nuove migrazioni.
+
+## Cassa iniziale all'apertura della giornata
+
+Dal menu, APRI GIORNATA apre il conteggio dei tagli da 500 euro a 10 centesimi (esclusi 1, 2 e 5 centesimi). Le quantità devono essere intere e non negative. ANNULLA non scrive dati; CONFERMA E APRI GIORNATA salva conteggio e totale insieme alla giornata. Un importo zero è consentito e non produce righe contabili a zero.
+
+Per un fondo positivo viene registrata una scrittura confermata: Dare conto 100 Cassa, Avere conto patrimoniale 310 Cassa Iniziale. Il conto 310 viene creato al primo utilizzo; un conto esistente incompatibile impedisce l'apertura. Giornata e scrittura sono nella stessa transazione. Un identificativo dell'apertura evita duplicazioni in caso di ripetizione della conferma e impedisce di applicare il conteggio a una giornata già aperta da un'altra postazione.
+
+La sezione CASSA INIZIALE dei Report e la stampa riportano il conteggio salvato, il fondo e la disponibilità comprensiva del fondo. La cassa iniziale non aumenta incassi, ricavi o totale operativo. Le giornate preesistenti mantengono fondo zero e nessun dettaglio.
+
+Migrazione aggiuntiva: 20261017230000_CassaInizialeGiornata. Aggiornare il database dalla schermata Connessione (F5) prima di usare la nuova versione su tutte le postazioni.
+
+## Tessera Fidelity in EntraSocio
+
+Con una Fidelity attiva, la scheda mostra timbri registrati con data/ora, spazi ancora da usare e il timbro verde dell'ingresso corrente. Il timbro verde conferma l'ingresso scelto (tariffa, abbonamento o premio Fidelity) tramite la normale registrazione: occorre completare la posizione e la scelta dell'ingresso. REGISTRA INGRESSO registra solo l'ingresso, senza timbrare. Il timbro viene richiesto esclusivamente tramite il comando del timbro verde. I timbri usati e gli spazi futuri non sono selezionabili; rientri, soci già presenti, blocchi e sospesi non permettono un nuovo timbro.
+
+La scrittura del timbro resta nella transazione dell'ingresso e non viene anticipata dalla vista. Lo storico conserva le date precedenti, anche dopo premi o rinnovi; la griglia scorre sul timbro corrente quando necessario. Nessuna modifica allo schema del database.
+
+
+La richiesta CassaRequest.TimbrareFidelity è falsa per impostazione predefinita. Il server aggiunge il timbro solo quando è esplicitamente vera; i rientri restano esclusi. I due comandi UI non condividono uno stato di selezione: un errore o un annullamento non abilita il timbro su un successivo ingresso normale.
+
+## Limite annullamento ingresso
+L'operatore può annullare l'ingresso dal menu della riga in CassaPostazione soltanto prima di dieci minuti dal CheckinTime della scheda. Il database verifica nuovamente il limite nella transazione dello storno, su qualsiasi postazione; da dieci minuti esatti richiede un operatore Amministratore. Non esiste ancora una procedura di autorizzazione o un bypass, nemmeno per l'amministratore corrente. Gli storni delle altre spese non hanno questo limite. Restano atomici rettifica contabile, NON ENTRA, annullamento timbri Fidelity e restituzione ingresso abbonamento; gli importi zero mantengono lo storico operativo senza creare movimenti monetari fittizi. Nessuna migrazione richiesta.

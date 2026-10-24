@@ -5,7 +5,7 @@
     <PublishAot>false</PublishAot><PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../Cassa/Cassa.csproj" /><ProjectReference Include="../Servizi/Servizi.csproj" />
+    <ProjectReference Include="../Soci/Soci.csproj" /><ProjectReference Include="../Cassa/Cassa.csproj" /><ProjectReference Include="../Servizi/Servizi.csproj" />
     <ProjectReference Include="../DatabaseHost/DatabaseHost.csproj" />
     <ProjectReference Include="../Menu/Menu.csproj" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />

@@ -1,11 +1,12 @@
 namespace AppServices.Database;
 
-public enum CassaAction { Load, OpenSheet, ListInside, PrepareEntry, FindCard, RegisterEntry, StopStrisciate, AddCharge, SaveGuardaroba, SetPagamento, StornaConto, PrepareAbbonamento, BuyAbbonamento, LoadSospesi, SaldaSospeso, PrepareUscita, RegisterUscita, ActivateFidelity, LoadFidelityHistory }
+public enum CassaAction { Load, OpenSheet, ListInside, PrepareEntry, FindCard, RegisterEntry, StopStrisciate, AddCharge, SaveGuardaroba, SetPagamento, StornaConto, PrepareAbbonamento, BuyAbbonamento, LoadSospesi, SaldaSospeso, PrepareUscita, RegisterUscita, ActivateFidelity, LoadFidelityHistory, SetBloccoScheda, PagaTutto }
 
 public sealed class CassaRequest
 {
     public CassaAction Action { get; set; }
     public int PostazioneId { get; set; }
+    public bool BloccoScheda {get;set;}
     public string Posizione { get; set; } = "";
     public string NumeroTessera { get; set; } = "";
     public int TariffaId { get; set; }
@@ -15,9 +16,11 @@ public sealed class CassaRequest
     public int TipoFidelityId { get; set; }
     public int IngressoFidelityId { get; set; }
     public bool UsaCreditoFidelity { get; set; }
+    public bool TimbrareFidelity { get; set; }
     public int SchedaId { get; set; }
     public int ListinoId { get; set; }
     public int ContoId { get; set; }
+    public int[] ContoIds {get;set;}=[];
     public bool Pagato { get; set; }
     public int Grb1 { get; set; }
     public int Grb2 { get; set; }
@@ -48,6 +51,7 @@ public sealed class CassaResult
     public CassaTipoFidelity[] TipiFidelity { get; set; } = [];
     public string PostazioneName { get; set; } = "";
     public string StrisciateEndpoint { get; set; } = "";
+    public string TesseraImportata { get; set; } = "";
     public CassaScheda? Scheda { get; set; }
     public CassaScheda[] Schede { get; set; } = [];
     public CassaConto[] Conto { get; set; } = [];
@@ -170,6 +174,10 @@ public sealed class CassaSocio : System.ComponentModel.INotifyPropertyChanged
     public int Natoil { get; set; }
     public int ScadenzaTessera { get; set; }
     public bool Blocco { get; set; }
+    public bool SocioBloccato {get;set;}
+    public DateTime? BloccoSocioFino {get;set;}
+    public string BloccoSocioMotivo {get;set;}="";
+    public string AvvisoBlocco => SocioBloccato ? SociValidation.AvvisoBlocco(BloccoSocioFino,BloccoSocioMotivo) : "";
     public string PosizioneOccupata { get; set; } = "";
     public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
     private int _sospesiAperti;
@@ -196,6 +204,7 @@ public static class CassaEntryRules
     {
         if (socio is null || socio.PersonId == 0 || !string.Equals(socio.NumeroTessera, card.Trim(), StringComparison.Ordinal))
             return "Identifica il socio tramite la tessera.";
+        if (socio.SocioBloccato) return socio.AvvisoBlocco;
         if (socio.HasSospesi) return "Ingresso non consentito: salda prima i sospesi del socio.";
         if (socio.Blocco) return "Tessera non abilitata.";
         if (socio.ScadenzaTessera < today.Year * 10000 + today.Month * 100 + today.Day)

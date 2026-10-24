@@ -15,6 +15,7 @@ public sealed class DatabaseHostRequest
     public CassaRequest? Cassa { get; set; }
     public ServiziRequest? Servizi { get; set; }
     public ReportRequest? Report { get; set; }
+    public MenuAperturaRequest? AperturaGiornata { get; set; }
 }
 public sealed class DatabaseHostResponse
 {
@@ -30,12 +31,14 @@ public sealed class DatabaseHostResponse
     public LoginOperator[] Operators { get; set; } = [];
     public LoginSession? Session { get; set; }
     public MenuState? Menu { get; set; }
+    public MirrorStatus? Mirror { get; set; }
     public SociResult? Soci { get; set; }
     public ConfigurazioneResult? Configurazione { get; set; }
     public CassaResult? Cassa { get; set; }
     public ServiziResult? Servizi { get; set; }
     public ReportResult? Report { get; set; }
 }
+[JsonSerializable(typeof(TaglioEuro[]))]
 [JsonSerializable(typeof(DatabaseHostRequest))]
 [JsonSerializable(typeof(DatabaseHostResponse))]
 public partial class DatabaseProtocolJsonContext : JsonSerializerContext {

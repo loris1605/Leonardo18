@@ -8,7 +8,7 @@ public sealed class CassaTipoFidelity
     public int TipoPremioId { get; set; }
     public decimal ValorePremio { get; set; }
     public int DurataGiorni { get; set; }
-    public string Descrizione => $"{Nome} Â· {Traguardo} timbri Â· "+(TipoPremioId==1?"ingresso Fidelity":$"sconto {ValorePremio:N2} â‚¬");
+    public string Descrizione => $"{Nome} · {Traguardo} timbri · "+(TipoPremioId==1?"ingresso Fidelity":$"sconto {ValorePremio:N2} €");
 }
 public sealed class CassaTimbroFidelity
 {
@@ -30,9 +30,9 @@ public sealed class CassaFidelity
     public CassaTimbroFidelity[] Timbri { get; set; } = [];
     public bool CanIngresso => Attiva&&TipoPremioId==1&&Traguardo>0&&Punti>=Traguardo;
     public bool HasCredito => CreditoSconto>0;
-    public string Progresso => Attiva?$"{Punti} timbri Â· traguardo {Traguardo}" : "Fidelity da attivare o rinnovare";
+    public string Progresso => Attiva?$"{Punti} timbri · traguardo {Traguardo}" : "Fidelity da attivare o rinnovare";
     public string Scadenza => ScadeIl is {} end?$"Scadenza raccolta: {end:dd/MM/yyyy}":"Raccolta senza scadenza";
-    public string Premio => CanIngresso?$"{Punti/Traguardo} "+(Punti/Traguardo==1?"ingresso Fidelity disponibile":"ingressi Fidelity disponibili"):TipoPremioId==2?$"Credito sconto maturato: {CreditoSconto:N2} â‚¬":"";
+    public string Premio => CanIngresso?$"{Punti/Traguardo} "+(Punti/Traguardo==1?"ingresso Fidelity disponibile":"ingressi Fidelity disponibili"):TipoPremioId==2?$"Credito sconto maturato: {CreditoSconto:N2} €":"";
 }
 
 public sealed class CassaMovimentoFidelity

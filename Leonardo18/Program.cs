@@ -52,6 +52,8 @@ internal static class Program
 
         services.AddTransient<IMenuRepository>(sp =>
             new MenuRepository(sp.GetRequiredService<IDatabaseHostClient>()));
+        services.AddTransient<IMirrorClient>(sp =>
+            new MirrorClient(sp.GetRequiredService<IDatabaseHostClient>()));
 
         services.AddTransient<ISociPersonRepository>(sp =>
             new SociPersonRepository(sp.GetRequiredService<IDatabaseHostClient>()));
@@ -66,7 +68,7 @@ internal static class Program
             host => new LoginViewModel(sp.GetRequiredService<ILoginRepository>(), host));
 
         services.AddTransient<Func<IScreen, IMenuViewModel>>(sp =>
-            host => new MenuViewModel(sp.GetRequiredService<IMenuRepository>(), host));
+            host => new MenuViewModel(sp.GetRequiredService<IMenuRepository>(), host, sp.GetRequiredService<IMirrorClient>()));
 
         services.AddTransient<Func<IScreen, ISociViewModel>>(sp =>
             host => new SociViewModel(sp.GetRequiredService<ISociPersonRepository>(), host));

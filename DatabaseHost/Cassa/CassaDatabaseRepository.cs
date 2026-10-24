@@ -68,15 +68,27 @@ public sealed partial class CassaDatabaseRepository(Func<AppDbContext> contextFa
             case CassaAction.BuyAbbonamento:
                 result.AcquistoAbbonamento=await BuyAbbonamento(db,operatorId,station,request,ct);
                 break;
+            case CassaAction.SetBloccoScheda:
             case CassaAction.OpenSheet:
             case CassaAction.AddCharge:
             case CassaAction.SaveGuardaroba:
             case CassaAction.SetPagamento:
+            case CassaAction.PagaTutto:
             case CassaAction.StornaConto:
                 if (string.IsNullOrWhiteSpace(request.Posizione)) throw new InvalidOperationException("Inserisci la posizione.");
                 result.Scheda = await db.Schede.AsNoTracking().Where(x => x.Posizione == request.Posizione.Trim())
                     .Select(x => ToSheet(x)).SingleOrDefaultAsync(ct);
                 if (result.Scheda is null) throw new InvalidOperationException("Nessuna scheda trovata per la posizione specificata.");
+                if(request.Action==CassaAction.SetBloccoScheda)
+                {
+                    if(request.SchedaId!=result.Scheda.Id)throw new InvalidOperationException("La scheda della posizione è cambiata. Riapri la scheda.");
+                    var lockedSheet=await db.Schede.SingleAsync(x=>x.Id==request.SchedaId,ct);
+                    if(lockedSheet.CheckoutTime!=DateTime.MaxValue)throw new InvalidOperationException("La scheda è già chiusa.");
+                    lockedSheet.Blocco=request.BloccoScheda;
+                    await db.SaveChangesAsync(ct);result.Scheda=ToSheet(lockedSheet);
+                }
+                if(request.Action is CassaAction.AddCharge or CassaAction.SaveGuardaroba or CassaAction.SetPagamento or CassaAction.PagaTutto or CassaAction.StornaConto)
+                    if(result.Scheda.Blocco)throw new InvalidOperationException("Scheda bloccata: inserimenti e modifiche non consentiti da alcuna postazione. Sblocca la scheda in Cassa prima di procedere.");
                 if (request.Action == CassaAction.StornaConto)
                 {
                     if (request.SchedaId != result.Scheda.Id)
@@ -87,6 +99,8 @@ public sealed partial class CassaDatabaseRepository(Func<AppDbContext> contextFa
                         x => x.Id == request.ContoId && x.SchedaId == request.SchedaId, ct)
                         ?? throw new InvalidOperationException("La voce di spesa non appartiene alla scheda aperta o non è più presente.");
                     if(source.IsIngresso&&await db.Schede.AnyAsync(x=>x.Id==source.SchedaId&&x.IngressoAnnullato,ct))throw new InvalidOperationException("Ingresso già annullato: NON ENTRA.");
+                    if(source.IsIngresso&&!CassaAnnullamentoIngresso.Consentito(result.Scheda.CheckinTime,DateTime.Now))
+                        throw new InvalidOperationException(CassaAnnullamentoIngresso.AutorizzazioneRichiesta);
                     if(source.IsIngresso&&await CompletePreviousEntryReversal(db,source,ct))result.Scheda.IngressoAnnullato=true;
                     else if (source.IsIngresso||source.VoicePrice > 0||source.VoicePrice==0&&await HasUnrefundedFidelityDiscount(db,source.Id,ct))
                     {
@@ -124,6 +138,7 @@ public sealed partial class CassaDatabaseRepository(Func<AppDbContext> contextFa
                     accountLine.Pagato=request.Pagato;
                     await db.SaveChangesAsync(ct);
                 }
+                if(request.Action==CassaAction.PagaTutto)await PayAllAccount(db,operatorId,station,request,result.Scheda,ct);
                 if (request.Action == CassaAction.SaveGuardaroba)
                 {
                     if (request.SchedaId != result.Scheda.Id)
@@ -197,6 +212,7 @@ public sealed partial class CassaDatabaseRepository(Func<AppDbContext> contextFa
             case CassaAction.RegisterEntry:
                 if (request.Note.Length > 50) throw new InvalidOperationException("Le note possono contenere al massimo 50 caratteri.");
                 var socio = await FindCard(db, request.NumeroTessera, ct);
+                if(socio?.SocioBloccato==true)throw new InvalidOperationException(socio.AvvisoBlocco);
                 var tariffa = await EntryRates(db, station.Id).SingleOrDefaultAsync(x => x.Id == request.TariffaId, ct);
                 var reentry=await FindReentry(db,station,socio,ct);
                 if(request.Rientro)
@@ -240,7 +256,7 @@ public sealed partial class CassaDatabaseRepository(Func<AppDbContext> contextFa
                 if(request.IngressoFidelityId!=0)await ConsumeFidelityEntry(db,socio!,request.IngressoFidelityId,sheet,ct);
                 await PostPaidEntry(db, operatorId, station, sheet, socio!, tariffa!, ct);
                 RecordFidelityDiscount(db,entryDiscount,sheet.SchedeConto.Single(),true);
-                await StampFidelity(db,sheet,ct);await db.SaveChangesAsync(ct);
+                if(request.TimbrareFidelity)await StampFidelity(db,sheet,ct);await db.SaveChangesAsync(ct);
                 if(subscriptionEntry is not null) { subscriptionEntry.SchedaIngressoId=sheet.Id;subscriptionEntry.Note+=$"; scheda {sheet.Id}; operatore {operatorId}"; await db.SaveChangesAsync(ct); }
                 result.Scheda = ToSheet(sheet);
                 break;
@@ -302,6 +318,8 @@ public sealed partial class CassaDatabaseRepository(Func<AppDbContext> contextFa
         var member = new CassaSocio {
             PersonId=person.Id, NumeroTessera=card.NumeroTessera, NumeroSocio=card.Socio.NumeroSocio,
             Cognome=person.SurName, Nome=person.FirstName, Natoil=person.Natoil,
+            SocioBloccato=SociValidation.BloccoAttivo(person.BloccoSocio,person.BloccoSocioFino,DateTime.Today),
+            BloccoSocioFino=person.BloccoSocioFino, BloccoSocioMotivo=person.BloccoSocioMotivo,
             ScadenzaTessera=card.Scadenza, Blocco=!card.Abilitato, PosizioneOccupata=position ?? ""
         };
         var pending=await MemberPending(db,person.Id,ct);

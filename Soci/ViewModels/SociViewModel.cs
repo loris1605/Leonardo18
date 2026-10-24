@@ -52,6 +52,7 @@ public sealed class SociViewModel : ViewModelBase, ISociViewModel
     public bool IsSearchVisible => _showSearch;
     public string ResultText => $"{DataSource.Count} {(DataSource.Count==1?"registrazione":"registrazioni")}" + (_limitReached ? " — primi 100 risultati: restringi la ricerca":"");
     public string InfoLabel { get=>_info; private set=>this.RaiseAndSetIfChanged(ref _info,value); }
+    public ReactiveCommand<RxVoid,RxVoid> BlocchiCommand { get; }
     public ReactiveCommand<RxVoid,RxVoid> AddCommand { get; }
     public ReactiveCommand<RxVoid,RxVoid> UpdCommand { get; }
     public ReactiveCommand<RxVoid,RxVoid> DelCommand { get; }
@@ -70,6 +71,7 @@ public sealed class SociViewModel : ViewModelBase, ISociViewModel
     public SociViewModel(ISociPersonRepository? repository=null,IScreen? host=null):base(host)
     {
         _repository=repository??new SociPersonRepository();
+        BlocchiCommand=Command(()=>OpenEditor(new BloccoSocioViewModel(SelectedData())),_person);
         AddCommand=Command(()=>OpenEditor(new PersonAddViewModel()),_group);
         UpdCommand=Command(()=>OpenEditor(new PersonUpdViewModel(SelectedData())),_person);
         DelCommand=Command(()=>OpenEditor(new PersonDelViewModel(SelectedData())),_deletePerson);

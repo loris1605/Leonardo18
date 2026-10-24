@@ -30,11 +30,23 @@ internal static class Program
     {
         try
         {
-            if(args.Contains("--entry-sospesi") || args.Contains("--menu-xaml") || args.Contains("--bollini") || args.Contains("--rientri") || args.Contains("--fidelity") || args.Contains("--report") || args.Contains("--storno-ingresso"))
+            if(args.Contains("--mirror") || args.Contains("--fidelity-tessera") || args.Contains("--giornata-ui") || args.Contains("--textbox-focus") || args.Contains("--cassa-iniziale") || args.Contains("--cassa-ui") || args.Contains("--paga-tutto") || args.Contains("--person-maiuscolo") || args.Contains("--blocchi-soci") || args.Contains("--strisciata-ingresso") || args.Contains("--entry-sospesi") || args.Contains("--menu-xaml") || args.Contains("--bollini") || args.Contains("--rientri") || args.Contains("--fidelity") || args.Contains("--report") || args.Contains("--storno-ingresso") || args.Contains("--blocco-scheda") || args.Contains("--uscita"))
             {
                 AppBuilder.Configure<TestApplication>().UseSkia()
                     .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing=false })
                     .UseReactiveUI(_ => { }).SetupWithoutStarting();
+                if(args.Contains("--mirror")) { Wait(MirrorChecks.Background()); MirrorChecks.UI(); Console.WriteLine($"PASS: {MirrorChecks.Count} verifiche collegamento mirror, sincronizzazione, errori e menu."); return 0; }
+                if(args.Contains("--fidelity-tessera")) { FidelityTesseraChecks.UI(); Console.WriteLine($"PASS: {FidelityTesseraChecks.Count} verifiche tessera Fidelity in EntraSocio."); return 0; }
+                if(args.Contains("--giornata-ui")) { CassaInizialeChecks.UI(); Console.WriteLine($"PASS: {CassaInizialeChecks.Count} verifiche vista apertura giornata e focus."); return 0; }
+                if(args.Contains("--textbox-focus")) { TextBoxFocusChecks.UI(); Console.WriteLine($"PASS: {TextBoxFocusChecks.Count} verifiche selezione testo al focus."); return 0; }
+                if(args.Contains("--cassa-iniziale")) { Wait(StartChecks.Database()); Wait(CassaInizialeChecks.Database()); CassaInizialeChecks.UI(); Console.WriteLine($"PASS: {CassaInizialeChecks.Count} verifiche cassa iniziale e {StartChecks.Count} verifiche migrazioni."); return 0; }
+                if(args.Contains("--cassa-ui")) { UiChecks(listOnly:true); Console.WriteLine($"PASS: {_checks} verifiche elenco soci e navigazione."); return 0; }
+                if(args.Contains("--paga-tutto")) { Wait(PagaTuttoChecks.Database()); PagaTuttoChecks.UI(); Console.WriteLine($"PASS: {PagaTuttoChecks.Count} verifiche pagamento totale conto."); return 0; }
+                if(args.Contains("--person-maiuscolo")) { Wait(StartChecks.Database()); Wait(PersonMaiuscoloChecks.Database()); Console.WriteLine($"PASS: {PersonMaiuscoloChecks.Count} verifiche maiuscole e {StartChecks.Count} verifiche migrazioni."); return 0; }
+                if(args.Contains("--blocchi-soci")) { Wait(StartChecks.Database()); Wait(BlocchiSociChecks.Database()); BlocchiSociChecks.UI(); Console.WriteLine($"PASS: {BlocchiSociChecks.Count} verifiche blocchi soci e {StartChecks.Count} verifiche migrazioni."); return 0; }
+                if(args.Contains("--strisciata-ingresso")) { Wait(StrisciataIngressoChecks.Database()); StrisciataIngressoChecks.UI(); Console.WriteLine($"PASS: {StrisciataIngressoChecks.Count} verifiche tessera importata e ingresso."); return 0; }
+                if(args.Contains("--uscita")) { Wait(UscitaChecks.Database()); UscitaChecks.UI(); Console.WriteLine($"PASS: {UscitaChecks.Count} verifiche uscita e abilitazione Esce Socio."); return 0; }
+                if(args.Contains("--blocco-scheda")) { Wait(BloccoSchedaChecks.Database()); BloccoSchedaChecks.UI(); Console.WriteLine($"PASS: {BloccoSchedaChecks.Count} verifiche blocco scheda fra postazioni e interfaccia."); return 0; }
                 if(args.Contains("--storno-ingresso")) { Wait(StartChecks.Database()); Wait(IngressoContabilitaChecks.Database()); Wait(VociSpesaContabilitaChecks.Database()); Console.WriteLine($"PASS: {IngressoContabilitaChecks.Count} verifiche contabilità ingressi e {VociSpesaContabilitaChecks.Count} verifiche voci di spesa."); return 0; }
                 if(args.Contains("--report")) { Wait(ReportChecks.Database()); ReportChecks.UI(); ReportChecks.PrintDocument(); Console.WriteLine($"PASS: {ReportChecks.Count} verifiche Report e stampa."); return 0; }
                 if(args.Contains("--fidelity")) { Wait(StartChecks.Database()); Wait(FidelityChecks.Database()); FidelityChecks.UI(); Wait(ServiziChecks.Database()); ServiziChecks.UI(); Console.WriteLine($"PASS: {FidelityChecks.Count} verifiche Fidelity e {StartChecks.Count} verifiche migrazioni."); return 0; }
@@ -293,7 +305,7 @@ internal static class Program
         throw new Exception("Richiesta non valida accettata: "+expected);
     }
 
-    private static void UiChecks()
+    private static void UiChecks(bool listOnly=false)
     {
         var repository=new FakeCassaRepository();
         var vm=new CassaViewModel(new Screen(),repository,100);
@@ -305,6 +317,8 @@ internal static class Program
         vm.Posizione="A01"; Command(vm.OpenSheetCommand);
         Check(vm.HasSheet && vm.Sheet?.Anagrafica == "Rossi Mario" && vm.Totale == 12.50m, "Apertura scheda dalla vista.");
         Check(vm.HasVociSpesa && vm.VociSpesa.First().Descrizione=="Acqua","Voci di spesa caricate solo con la scheda aperta.");
+        if(!listOnly)
+        {
         void Storna(CassaConto line)
         {
             var completion=new TaskCompletionSource();
@@ -370,24 +384,24 @@ internal static class Program
         }
         Dispatcher.UIThread.RunJobs();
         var paymentRow=vm.Conto.Single(); var paymentSheet=vm.Sheet; var paymentSectors=vm.SettoriSpesa;
-        var paymentCheckbox=view.GetVisualDescendants().OfType<CheckBox>().Single();
+        var paymentCheckbox=view.GetVisualDescendants().OfType<CheckBox>().Single(x=>ReferenceEquals(x.DataContext,vm.Conto.Single()));
         var paymentCollectionChanges=0;
         System.Collections.Specialized.NotifyCollectionChangedEventHandler paymentCollectionHandler=(_,_)=>paymentCollectionChanges++;
         vm.Conto.CollectionChanged+=paymentCollectionHandler;
         SetPayment();
         vm.Conto.CollectionChanged-=paymentCollectionHandler;
         Check(paymentCollectionChanges==0 && ReferenceEquals(paymentRow,vm.Conto.Single())
-            && ReferenceEquals(paymentCheckbox,view.GetVisualDescendants().OfType<CheckBox>().Single()),
+            && ReferenceEquals(paymentCheckbox,view.GetVisualDescendants().OfType<CheckBox>().Single(x=>ReferenceEquals(x.DataContext,vm.Conto.Single()))),
             "Pagamento aggiorna la riga esistente senza ricreare collezione o casella.");
         Check(ReferenceEquals(paymentSheet,vm.Sheet) && ReferenceEquals(paymentSectors,vm.SettoriSpesa),
             "Pagamento non ricarica anagrafica o tab dei settori.");
         Check(!vm.Conto.Single().Pagato && vm.DaPagare==12.50m && vm.Totale==12.50m,"Casella pagamento aggiorna stato e da pagare lasciando invariato il totale.");
-        Check(view.GetVisualDescendants().OfType<CheckBox>().Single().IsChecked==false,"Casella mostra lo stato salvato.");
+        Check(view.GetVisualDescendants().OfType<CheckBox>().Single(x=>ReferenceEquals(x.DataContext,vm.Conto.Single())).IsChecked==false,"Casella mostra lo stato salvato.");
         repository.FailPayment=true;
-        view.GetVisualDescendants().OfType<CheckBox>().Single().SetCurrentValue(Avalonia.Controls.Primitives.ToggleButton.IsCheckedProperty,true);
+        view.GetVisualDescendants().OfType<CheckBox>().Single(x=>ReferenceEquals(x.DataContext,vm.Conto.Single())).SetCurrentValue(Avalonia.Controls.Primitives.ToggleButton.IsCheckedProperty,true);
         SetPayment();
         Check(!vm.Conto.Single().Pagato && vm.DaPagare==12.50m && vm.InfoLabel.Contains("prova pagamento"),"Errore pagamento conserva stato e totali precedenti.");
-        Check(view.GetVisualDescendants().OfType<CheckBox>().Single().IsChecked==false,"Errore ripristina anche la casella visiva.");
+        Check(view.GetVisualDescendants().OfType<CheckBox>().Single(x=>ReferenceEquals(x.DataContext,vm.Conto.Single())).IsChecked==false,"Errore ripristina anche la casella visiva.");
         repository.FailPayment=false;
         vm.Grb1="77"; vm.SelectedSettoreSpesa=vm.SettoriSpesa.Last(); SetPayment();
         Check(vm.Conto.Single().Pagato && vm.DaPagare==0 && vm.Grb1=="77" && vm.SelectedSettoreSpesa?.Nome=="Guardaroba",
@@ -488,6 +502,7 @@ internal static class Program
         Check(vm.EntryWarning.Contains("occupata"),"Posizione occupata blocca l'ingresso.");
         vm.EntryPosition="A02"; Command(vm.RegisterEntryCommand);
         Check(vm.IsPostazione && vm.HasSheet && repository.Actions.Contains(CassaAction.RegisterEntry),"Ingresso torna alla scheda della postazione.");
+        }
         Command(vm.ListaSociCommand);
         Check(vm.IsList && vm.Schede.Count == 2,"Elenco soci nella vista.");
         vm.SearchText="Mario"; Check(vm.Schede.Count == 1,"Filtro per anagrafica.");
@@ -614,6 +629,7 @@ public sealed class TestApplication : Application
 {
     public override void Initialize()
     {
+        ControlStyles.TextBoxFocusSelection.Enable();
         Styles.Add(new FluentTheme());
         Styles.Add(new StyleInclude(new Uri("avares://Cassa.Tests/")) { Source=new Uri("avares://ControlStyles/Themes/MyStyles.axaml") });
     }

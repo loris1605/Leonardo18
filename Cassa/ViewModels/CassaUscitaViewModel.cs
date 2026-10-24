@@ -6,11 +6,12 @@ using ReactiveUI.Primitives.Signals;
 namespace Cassa.ViewModels;
 public sealed partial class CassaViewModel
 {
-    private readonly StateSignal<bool> _exitPayReady=new(false),_exitDebtReady=new(false);
+    private readonly StateSignal<bool> _exitPayReady=new(false),_exitDebtReady=new(false),_openExitReady=new(false);
     private string _exitPosition="",_exitCard="";
     private CassaScheda? _exitSheet;
     private CassaUscita? _exit;
     private Guid _exitId;
+    public bool CanEsceSocio=>IsUiReady&&IsPostazione&&!_paymentBusy&&!_guardarobaBusy&&Sheet is {Blocco:false,CheckoutTime:var end}&&end==DateTime.MaxValue;
     public bool IsUscita=>_page==5;
     public CassaScheda? SocioUscita=>_exitSheet;
     public bool HasSocioUscita=>_exitSheet!=null;
@@ -40,7 +41,7 @@ public sealed partial class CassaViewModel
     public ReactiveCommand<RxVoid,RxVoid> SospendiUscitaCommand {get;private set;}=null!;
     private void InitializeUscita()
     {
-        EsceSocioCommand=ReactiveCommand.CreateFromTask(OpenExit,_ready);
+        EsceSocioCommand=ReactiveCommand.CreateFromTask(OpenExit,_openExitReady);
         CercaUscitaCommand=ReactiveCommand.CreateFromTask(FindExit,_ready);
         IncassaUscitaCommand=ReactiveCommand.CreateFromTask(()=>SaveExit(true),_exitPayReady);
         SospendiUscitaCommand=ReactiveCommand.CreateFromTask(()=>SaveExit(false),_exitDebtReady);
@@ -50,8 +51,8 @@ public sealed partial class CassaViewModel
     private void ResetExit(){_exitSheet=null;_exit=null;ContoUscita.Clear();_exitId=Guid.Empty;RefreshUscita();}
     private async Task OpenExit()
     {
-        if(_busy||_paymentBusy||_guardarobaBusy||_isClosing)return;
-        _exitPosition=Sheet?.Posizione??Posizione.Trim();_exitCard="";
+        if(!CanEsceSocio||Sheet is not {} sheet)return;
+        _exitPosition=sheet.Posizione;_exitCard="";
         this.RaisePropertyChanged(nameof(PosizioneUscita));this.RaisePropertyChanged(nameof(TesseraUscita));ResetExit();SetPage(5);
         if(_exitPosition.Length>0)await FindExit();await SetFocus(UscitaFocus);
     }
@@ -79,9 +80,11 @@ public sealed partial class CassaViewModel
     private void RefreshUscita()
     {
         if(_isClosing)return;
+        RefreshPagamentoTutto();
+        _openExitReady.Value=CanEsceSocio;this.RaisePropertyChanged(nameof(CanEsceSocio));
         foreach(var name in new[]{nameof(SocioUscita),nameof(HasSocioUscita),nameof(UscitaConfermata),nameof(TotaleUscita),nameof(PagatoUscita),nameof(DaPagareUscita),nameof(GuardarobaUscita),nameof(AvvisoUscita),nameof(IncassaUscitaLabel)})this.RaisePropertyChanged(name);
         var ready=IsUscita&&IsUiReady&&HasSocioUscita&&!UscitaConfermata&&_exitSheet?.Blocco==false&&DaPagareUscita>=0;
         _exitPayReady.Value=ready;_exitDebtReady.Value=ready&&DaPagareUscita>0;
     }
-    private void DisposeUscita(){EsceSocioCommand.Dispose();CercaUscitaCommand.Dispose();IncassaUscitaCommand.Dispose();SospendiUscitaCommand.Dispose();_exitPayReady.Dispose();_exitDebtReady.Dispose();ContoUscita.Clear();}
+    private void DisposeUscita(){EsceSocioCommand.Dispose();CercaUscitaCommand.Dispose();IncassaUscitaCommand.Dispose();SospendiUscitaCommand.Dispose();_openExitReady.Dispose();_exitPayReady.Dispose();_exitDebtReady.Dispose();ContoUscita.Clear();}
 }

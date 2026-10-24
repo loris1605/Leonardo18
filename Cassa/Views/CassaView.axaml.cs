@@ -34,6 +34,10 @@ public partial class CassaView : BaseUserControl<CassaViewModel>
             var input=this.GetVisualDescendants().OfType<UscitaSocioView>().First().FindControl<TextBox>("ExitPositionBox")!;
             input.Focus();input.SelectAll();interaction.SetOutput(RxVoid.Default);return Task.CompletedTask;
         }),
+        vm.SospesiCardFocus.RegisterHandler(interaction => {
+            var input=this.GetVisualDescendants().OfType<SospesiView>().First().FindControl<TextBox>("SospesiCardBox")!;
+            input.Focus();input.SelectAll();interaction.SetOutput(RxVoid.Default);return Task.CompletedTask;
+        }),
         vm.PositionFocus.RegisterHandler(interaction => { PosizioneBox.Focus(); PosizioneBox.SelectAll(); interaction.SetOutput(RxVoid.Default); return Task.CompletedTask; }),
         vm.CardFocus.RegisterHandler(interaction => { TesseraBox.Focus(); TesseraBox.SelectAll(); interaction.SetOutput(RxVoid.Default); return Task.CompletedTask; }),
         vm.AbbonamentoCardFocus.RegisterHandler(interaction => {
@@ -54,7 +58,10 @@ public partial class CassaView : BaseUserControl<CassaViewModel>
             || ViewModel is not { } vm || !vm.Conto.Contains(line)) return;
         row.ContextMenu?.Close();
         var item=new MenuItem {
-            Header="Storna voce", IsEnabled=line.CanStornare && !vm.IsPaymentBusy,
+            Header=line.IsIngresso
+                ? vm.Sheet is {} sheet && CassaAnnullamentoIngresso.Consentito(sheet.CheckinTime,DateTime.Now)
+                    ? "Annulla ingresso" : "Annulla ingresso · richiesta autorizzazione Amministratore"
+                : "Storna voce", IsEnabled=line.CanStornare && vm.CanEditSheet && !vm.IsPaymentBusy,
             Command=vm.StornaContoCommand, CommandParameter=line
         };
         var menu=new ContextMenu { ItemsSource=new[] { item } };

@@ -5,6 +5,9 @@ public class SociRecord
     ~SociRecord() => global::Leonardo18.Diagnostics.GcDebugLog.Collected(this);
 #endif
 
+        public bool BloccoSocio { get; set; }
+        public DateTime? BloccoSocioFino { get; set; }
+        public string BloccoSocioMotivo { get; set; } = "";
     public int Id { get; set; }
     public string Cognome { get; set; } = "";
     public string Nome { get; set; } = "";
